@@ -6,6 +6,7 @@ import io.xpipe.app.util.DocumentationLink;
 import io.xpipe.core.OsType;
 
 import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Locale;
@@ -91,6 +92,11 @@ public class ErrorEventFactory {
 
         if (t instanceof AccessDeniedException ade) {
             b.description("Access is denied: " + ade.getMessage());
+            b.expected();
+        }
+
+        if (t instanceof NoSuchFileException nsfe) {
+            b.description("No such file: " + nsfe.getMessage());
             b.expected();
         }
 

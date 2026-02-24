@@ -22,8 +22,8 @@ public class AppDisplayScale {
                 defaultDisplayScale = true;
             }
 
-            var allScreens = Screen.getScreens().stream().allMatch(screen -> screen.getOutputScaleX() == 1.0);
-            if (allScreens) {
+            var allScreensDefault = Screen.getScreens().stream().allMatch(screen -> screen.getOutputScaleX() == 1.0);
+            if (allScreensDefault) {
                 defaultDisplayScale = true;
             }
         } catch (Exception e) {

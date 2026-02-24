@@ -11,6 +11,7 @@ import io.xpipe.app.platform.PlatformThread;
 import io.xpipe.app.prefs.AppPrefs;
 import io.xpipe.app.storage.DataStorage;
 
+import io.xpipe.app.util.GlobalTimer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
@@ -23,6 +24,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import org.bouncycastle.math.raw.Mod;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,10 +68,12 @@ public class AppLayoutComp extends RegionStructureBuilder<BorderPane, AppLayoutC
                 }
 
                 if (AppPrefs.get() != null && AppPrefs.get().getRequiresRestart().get()) {
-                    var modal = ModalOverlay.of("prefsRestartTitle", AppDialog.dialogTextKey("prefsRestartContent"));
-                    modal.addButton(ModalButton.cancel());
-                    modal.addButton(new ModalButton("restart", () -> AppRestart.restart(), true, true));
-                    modal.show();
+                    GlobalTimer.delay(() -> {
+                        var modal = ModalOverlay.of("prefsRestartTitle", AppDialog.dialogTextKey("prefsRestartContent"));
+                        modal.addButton(ModalButton.cancel());
+                        modal.addButton(new ModalButton("restart", () -> AppRestart.restart(), true, true));
+                        modal.show();
+                    }, Duration.ofSeconds(1));
                 }
             }
 
