@@ -22,6 +22,13 @@ public class SystemIconManager {
     private static int cacheSourceHash;
     private static int sourceHash;
 
+    public static boolean hasLoadedAnyImages() {
+        var available = getIcons().stream()
+                .anyMatch(systemIcon -> AppImages.hasImage(
+                        "icons/" + systemIcon.getSource().getId() + "/" + systemIcon.getId() + "-40.png"));
+        return available;
+    }
+
     public static boolean isCacheOutdated() {
         return cacheSourceHash == 0 || sourceHash != cacheSourceHash;
     }
