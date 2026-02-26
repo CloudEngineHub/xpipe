@@ -126,6 +126,11 @@ public class TerminalDockView {
             return;
         }
 
+        // Reset style in case close is blocked by terminal
+        terminal.disown();
+        terminal.restoreIcon();
+        terminal.restoreStyle();
+
         terminal.close();
         terminalInstances.remove(terminal);
     }
