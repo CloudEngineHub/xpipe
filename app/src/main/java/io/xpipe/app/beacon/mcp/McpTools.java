@@ -4,6 +4,7 @@ import io.xpipe.app.beacon.AppBeaconServer;
 import io.xpipe.app.core.AppExtensionManager;
 import io.xpipe.app.core.AppNames;
 import io.xpipe.app.ext.*;
+import io.xpipe.app.hub.comp.StoreViewState;
 import io.xpipe.app.process.ScriptHelper;
 import io.xpipe.app.process.ShellControl;
 import io.xpipe.app.process.TerminalInitScriptConfig;
@@ -82,6 +83,10 @@ public final class McpTools {
 
         @NonNull
         String path;
+
+        String information;
+
+        String notes;
     }
 
     public static McpServerFeatures.SyncToolSpecification listSystems() throws IOException {
@@ -104,9 +109,14 @@ public final class McpTools {
                             continue;
                         }
 
+                        var section = StoreViewState.get().getSectionForWrapper(StoreViewState.get().getEntryWrapper(e));
+                        var info = section.isPresent() ? e.getProvider().informationString(section.get()).getValue() : null;
+
                         var r = ConnectionResource.builder()
                                 .name(e.getName())
                                 .path(DataStorage.get().getStorePath(e).toString())
+                                .information(info)
+                                .notes(e.getNotes())
                                 .build();
                         list.add(r);
                     }

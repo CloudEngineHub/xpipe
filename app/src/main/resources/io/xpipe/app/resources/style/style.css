@@ -26,10 +26,6 @@
     -fx-border-color: -color-neutral-emphasis;
 }
 
-.edit-button.icon-button-comp:hover, .root:key-navigation .edit-button.icon-button-comp:focused {
-    -fx-background-color: -color-accent-muted;
-}
-
 .scan-list {
     -fx-background-radius: 4px;
     -fx-border-width: 1;

@@ -58,7 +58,7 @@ public class StoreEntryWrapper {
     private final Property<DataStoreColor> color = new SimpleObjectProperty<>();
     private final Property<StoreCategoryWrapper> category = new SimpleObjectProperty<>();
     private final Property<String> summary = new SimpleObjectProperty<>();
-    private final Property<StoreNotes> notes;
+    private final ObjectProperty<String> notes;
     private final Property<String> customIcon = new SimpleObjectProperty<>();
     private final Property<String> iconFile = new SimpleObjectProperty<>();
     private final BooleanProperty sessionActive = new SimpleBooleanProperty();
@@ -117,7 +117,7 @@ public class StoreEntryWrapper {
                 shownSummary,
                 AppI18n.activeLanguage());
         this.shownInformation = new SimpleObjectProperty<>();
-        this.notes = new SimpleObjectProperty<>(new StoreNotes(entry.getNotes(), entry.getNotes()));
+        this.notes = new SimpleObjectProperty<>(entry.getNotes());
 
         setupListeners();
     }
@@ -158,12 +158,6 @@ public class StoreEntryWrapper {
         entry.addListener(() -> PlatformThread.runLaterIfNeeded(() -> {
             update();
         }));
-
-        notes.addListener((observable, oldValue, newValue) -> {
-            if (newValue.isCommited()) {
-                entry.setNotes(newValue.getCurrent());
-            }
-        });
     }
 
     public void stopSession() {
@@ -211,7 +205,7 @@ public class StoreEntryWrapper {
         }
         orderIndex.setValue(entry.getOrderIndex());
         color.setValue(entry.getColor());
-        notes.setValue(new StoreNotes(entry.getNotes(), entry.getNotes()));
+        notes.setValue(entry.getNotes());
         customIcon.setValue(entry.getIcon());
         readOnly.setValue(entry.isFreeze());
         iconFile.setValue(entry.getEffectiveIconFile());
