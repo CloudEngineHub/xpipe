@@ -21,8 +21,8 @@ public class StoreNotesComp extends RegionBuilder<Button> {
     public static void showDialog(StoreEntryWrapper wrapper, String initial) {
         var prop = new SimpleStringProperty(initial);
         var md = new MarkdownEditorComp(prop, "notes-" + wrapper.getName().getValue())
-                .prefWidth(600)
-                .prefHeight(600);
+                .prefWidth(700)
+                .prefHeight(800);
 
         var modal = ModalOverlay.of(new ReadOnlyStringWrapper(wrapper.getName().getValue()), md, null);
         if (wrapper.getNotes().getValue() != null) {

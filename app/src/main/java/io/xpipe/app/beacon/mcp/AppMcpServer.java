@@ -49,7 +49,7 @@ public class AppMcpServer {
         McpSyncServer syncServer = io.modelcontextprotocol.server.McpServer.sync(transportProvider)
                 .serverInfo(AppNames.ofCurrent().getName(), AppProperties.get().getVersion())
                 .capabilities(McpSchema.ServerCapabilities.builder()
-                        .resources(true, true)
+                        .resources(false, false)
                         .tools(true)
                         .prompts(false)
                         .build())
