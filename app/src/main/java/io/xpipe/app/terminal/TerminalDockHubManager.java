@@ -240,6 +240,7 @@ public class TerminalDockHubManager {
         if (!running) {
             minimized.set(false);
             detached.set(false);
+            disableDock();
             return;
         }
 

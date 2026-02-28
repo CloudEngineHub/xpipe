@@ -51,13 +51,6 @@ public class StoreIconChoiceDialog {
         });
 
         var comp = new StoreIconChoiceComp(
-                () -> {
-                    var showing = overlay.isShowing();
-                    overlay.close();
-                    if (showing) {
-                        Platform.runLater(() -> overlay.show());
-                    }
-                },
                 selected,
                 SystemIconManager.getIcons(),
                 5,

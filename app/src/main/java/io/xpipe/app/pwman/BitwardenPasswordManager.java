@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class BitwardenPasswordManager implements PasswordManager {
 
     private static ShellControl SHELL;
-    private static boolean copied;
 
     private static synchronized ShellControl getOrStartShell() throws Exception {
         if (SHELL == null) {
@@ -89,10 +88,6 @@ public class BitwardenPasswordManager implements PasswordManager {
     }
 
     private static void copyConfigIfNeeded() {
-        if (copied) {
-            return;
-        }
-
         var cacheDataFile = AppCache.getBasePath().resolve("data.json");
         var def = getDefaultConfigPath();
         if (Files.exists(def)) {
@@ -105,7 +100,6 @@ public class BitwardenPasswordManager implements PasswordManager {
                 ErrorEventFactory.fromThrowable(e).handle();
             }
         }
-        copied = true;
     }
 
     private static boolean loginOrUnlock() throws Exception {
