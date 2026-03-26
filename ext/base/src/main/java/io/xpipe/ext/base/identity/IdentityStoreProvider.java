@@ -6,6 +6,7 @@ import io.xpipe.app.hub.comp.StoreEntryWrapper;
 import io.xpipe.app.hub.comp.StoreSection;
 import io.xpipe.app.hub.comp.SystemStateComp;
 
+import io.xpipe.app.util.DocumentationLink;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -13,6 +14,11 @@ import javafx.beans.value.ObservableValue;
 import java.util.List;
 
 public abstract class IdentityStoreProvider implements DataStoreProvider {
+
+    @Override
+    public DocumentationLink getHelpLink() {
+        return DocumentationLink.IDENTITIES;
+    }
 
     @Override
     public List<String> getSearchableTerms(DataStore store) {

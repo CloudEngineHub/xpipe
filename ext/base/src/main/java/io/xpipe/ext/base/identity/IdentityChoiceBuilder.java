@@ -129,6 +129,7 @@ public class IdentityChoiceBuilder {
 
         var options = new OptionsBuilder()
                 .nameAndDescription(userChoiceTranslationKey)
+                .documentationLink(DocumentationLink.IDENTITIES)
                 .addComp(new IdentitySelectComp(ref, user, pass, identityStrategy, allowCustomUserInput), user)
                 .nonNullIf(inPlaceSelected.and(new SimpleBooleanProperty(requireUserInput)))
                 .name(Bindings.createStringBinding(

@@ -107,6 +107,7 @@ public enum DocumentationLink {
     BEACON_PORT_BIND("troubleshoot/beacon-port"),
     SERIAL_IMPLEMENTATION("guide/serial#serial-implementations"),
     SERIAL_PORTS("guide/serial#serial-ports"),
+    IDENTITIES("guide/identities"),
     TERMINAL("guide/terminals#noteworthy-integrations"),
     TERMINAL_LOGGING("guide/terminals#logging"),
     TERMINAL_LOGGING_FILES("guide/terminals#output-format"),
