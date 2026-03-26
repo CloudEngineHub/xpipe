@@ -33,13 +33,13 @@ public interface McpToolHandler
         } catch (BeaconClientException e) {
             ErrorEventFactory.fromThrowable(e).expected().omit().handle();
             return McpSchema.CallToolResult.builder()
-                    .addTextContent(e.getMessage())
+                    .addTextContent(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())
                     .isError(true)
                     .build();
         } catch (Throwable e) {
             ErrorEventFactory.fromThrowable(e).omit().handle();
             return McpSchema.CallToolResult.builder()
-                    .addTextContent(e.getMessage())
+                    .addTextContent(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())
                     .isError(true)
                     .build();
         }

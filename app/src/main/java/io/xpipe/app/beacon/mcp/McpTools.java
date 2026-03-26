@@ -5,6 +5,7 @@ import io.xpipe.app.core.AppExtensionManager;
 import io.xpipe.app.core.AppNames;
 import io.xpipe.app.ext.*;
 import io.xpipe.app.hub.comp.StoreViewState;
+import io.xpipe.app.prefs.AppPrefs;
 import io.xpipe.app.process.ScriptHelper;
 import io.xpipe.app.process.ShellControl;
 import io.xpipe.app.process.TerminalInitScriptConfig;
@@ -13,7 +14,9 @@ import io.xpipe.app.storage.DataStorage;
 import io.xpipe.app.storage.DataStorageQuery;
 import io.xpipe.app.terminal.TerminalLaunch;
 import io.xpipe.app.util.CommandDialog;
+import io.xpipe.app.util.HttpHelper;
 import io.xpipe.beacon.BeaconClientException;
+import io.xpipe.beacon.BeaconInterface;
 import io.xpipe.core.FilePath;
 import io.xpipe.core.JacksonMapper;
 
@@ -27,6 +30,9 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -69,6 +75,44 @@ public final class McpTools {
 
                     return McpSchema.CallToolResult.builder()
                             .addTextContent(text)
+                            .build();
+                }))
+                .build();
+    }
+
+    public static McpServerFeatures.SyncToolSpecification callApi() throws IOException {
+        var tool = McpSchemaFiles.loadTool("call_api.json");
+        return McpServerFeatures.SyncToolSpecification.builder()
+                .tool(tool)
+                .callHandler(McpToolHandler.of((req) -> {
+                    var path = req.getStringArgument("path");
+                    var payload = req.getRawRequest().arguments().get("payload");
+                    var payloadJson = JacksonMapper.getDefault().valueToTree(payload);
+
+                    if (!AppPrefs.get().enableHttpApi().get()) {
+                        throw new BeaconClientException("HTTP API is not enabled");
+                    }
+
+                    var i = BeaconInterface.byPath(path);
+                    if (i.isEmpty()) {
+                        throw new BeaconClientException("No API endpoint found for path " + path);
+                    }
+
+                    var httpReq = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + AppBeaconServer.get().getPort() + path))
+                            .header("Authorization", "Bearer " + AppPrefs.get().apiKey().get())
+                            .POST(HttpRequest.BodyPublishers.ofString(payloadJson.toPrettyString())).build();
+                    var httpRes = HttpHelper.client().send(httpReq, HttpResponse.BodyHandlers.ofString());
+
+                    var resJson = JacksonMapper.getDefault().readTree(httpRes.body());
+                    if (httpRes.statusCode() >= 400) {
+                        return McpSchema.CallToolResult.builder()
+                                .addTextContent(resJson.toPrettyString())
+                                .isError(true)
+                                .build();
+                    }
+
+                    return McpSchema.CallToolResult.builder()
+                            .addTextContent(resJson.toPrettyString())
                             .build();
                 }))
                 .build();

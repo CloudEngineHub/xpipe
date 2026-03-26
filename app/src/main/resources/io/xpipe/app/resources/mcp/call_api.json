@@ -1,0 +1,26 @@
+{
+  "name": "call_api",
+  "description": "Calls the XPipe HTTP API at a specified endpoint with a json payload. The OpenAPI schema file is available at https://docs.xpipe.io/openapi.yaml",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "The API endpoint to call, e.g. /connection/add"
+      },
+      "payload": {
+        "type": "object",
+        "description": "The json payload for the API endpoint according to the schema"
+      }
+    },
+    "required": [
+      "path",
+      "payload"
+    ]
+  },
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": true,
+    "openWorldHint": false
+  }
+}

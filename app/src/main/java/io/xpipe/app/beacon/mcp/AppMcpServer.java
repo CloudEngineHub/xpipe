@@ -73,6 +73,7 @@ public class AppMcpServer {
         mutationTools.add(McpTools.runCommand());
         mutationTools.add(McpTools.runScript());
         mutationTools.add(McpTools.toggleState());
+        readOnlyTools.add(McpTools.callApi());
 
         for (McpServerFeatures.SyncToolSpecification readOnlyTool : readOnlyTools) {
             syncServer.addTool(readOnlyTool);

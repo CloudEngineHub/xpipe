@@ -43,7 +43,6 @@ public class CategoryInfoExchange extends BeaconInterface<CategoryInfoExchange.R
         @NonNull
         UUID category;
 
-        @NonNull
         UUID parentCategory;
 
         @NonNull
