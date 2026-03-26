@@ -95,7 +95,9 @@ public class SshAgentKeyListComp extends SimpleRegionBuilder {
                         }
 
                         var target = struc.getParent().getChildrenUnmodifiable().getFirst();
-                        popover.show(target);
+                        if (!popover.isShowing() && target.getScene() != null) {
+                            popover.show(target);
+                        }
                     });
                 });
                 event.consume();

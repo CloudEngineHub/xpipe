@@ -73,7 +73,9 @@ public class SshAgentTestComp extends SimpleRegionBuilder {
                         }
 
                         var target = struc;
-                        popover.show(target);
+                        if (!popover.isShowing() && target.getScene() != null) {
+                            popover.show(target);
+                        }
                     });
                 });
                 event.consume();
