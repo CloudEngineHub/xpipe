@@ -21,6 +21,7 @@ public class ShellView {
     protected Boolean administrator;
     protected PasswdFile passwdFile;
     protected GroupFile groupFile;
+    protected String recognized;
     protected final Map<String, Boolean> installedApplications = new HashMap<>();
     protected final Map<String, Boolean> genericCache = new HashMap<>();
 
@@ -126,13 +127,27 @@ public class ShellView {
     }
 
     public void moveFile(FilePath source, FilePath dest) throws Exception {
-        getDialect().getFileMoveCommand(shellControl, source.toString(), dest.toString()).execute();
+        getDialect()
+                .getFileMoveCommand(shellControl, source.toString(), dest.toString())
+                .execute();
     }
 
     public boolean fileExists(FilePath path) throws Exception {
         return getDialect()
                 .createFileExistsCommand(shellControl, path.toString())
                 .executeAndCheck();
+    }
+
+    public String getRecognizedArch() throws Exception {
+        if (shellControl.getOsType() == OsType.WINDOWS) {
+            var env = getEnvironmentVariable("PROCESSOR_ARCHITECTURE").orElse(null);
+            var effective = "ARM64".equals(env) ? "arm64" : "x86_64";
+            return recognized = effective;
+        } else {
+            var uname =
+                    shellControl.command(CommandBuilder.of().add("uname", "-m")).readStdoutIfPossible();
+            return recognized = "arm64".equals(uname.orElse("x86_64")) ? "arm64" : "x86_64";
+        }
     }
 
     public void deleteDirectory(FilePath path) throws Exception {

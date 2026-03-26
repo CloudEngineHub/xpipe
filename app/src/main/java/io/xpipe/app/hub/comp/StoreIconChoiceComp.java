@@ -8,11 +8,9 @@ import io.xpipe.app.icon.SystemIcon;
 import io.xpipe.app.icon.SystemIconManager;
 import io.xpipe.app.platform.LabelGraphic;
 import io.xpipe.app.platform.PlatformThread;
-import io.xpipe.app.storage.DataStoreEntry;
 import io.xpipe.app.util.BooleanScope;
 import io.xpipe.app.util.ThreadHelper;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.geometry.Pos;
@@ -28,7 +26,6 @@ import lombok.Getter;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static atlantafx.base.theme.Styles.TEXT_SMALL;
 
@@ -39,7 +36,7 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
     private final int columns;
     private final SimpleStringProperty filter;
     private final Runnable doubleClick;
-    private final DataStoreEntry entry;
+    private final String defaultIcon;
 
     @Getter
     private final BooleanProperty busy = new SimpleBooleanProperty();
@@ -49,14 +46,14 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
             Set<SystemIcon> icons,
             int columns,
             SimpleStringProperty filter,
-            Runnable doubleClick, DataStoreEntry entry
-    ) {
+            Runnable doubleClick,
+            String defaultIcon) {
         this.selected = selected;
         this.icons = icons;
         this.columns = columns;
         this.filter = filter;
         this.doubleClick = doubleClick;
-        this.entry = entry;
+        this.defaultIcon = defaultIcon;
     }
 
     @Override
@@ -79,7 +76,9 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
         filter.addListener((observable, oldValue, newValue) -> updateData(table, newValue));
         busy.addListener((observable, oldValue, newValue) -> {
             if (oldValue && !newValue) {
-                updateData(table, filter.getValue());
+                PlatformThread.runLaterIfNeeded(() -> {
+                    updateData(table, filter.getValue());
+                });
             }
         });
 
@@ -99,6 +98,12 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
     }
 
     private void initTable(TableView<List<SystemIcon>> table) {
+        table.setPlaceholder(new Region());
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        table.getSelectionModel().setCellSelectionEnabled(true);
+        table.getStyleClass().add("icon-browser");
+        table.disableProperty().bind(PlatformThread.sync(busy));
+
         for (int i = 0; i < columns; i++) {
             var col = new TableColumn<List<SystemIcon>, SystemIcon>("col" + i);
             final int colIndex = i;
@@ -111,12 +116,6 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
             col.getStyleClass().add(Tweaks.ALIGN_CENTER);
             table.getColumns().add(col);
         }
-
-        table.setPlaceholder(new Region());
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        table.getSelectionModel().setCellSelectionEnabled(true);
-        table.getStyleClass().add("icon-browser");
-        table.disableProperty().bind(PlatformThread.sync(busy));
     }
 
     private Region createLoadingPane() {
@@ -132,7 +131,7 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
                 });
         refreshButton.hide(Bindings.createBooleanBinding(
                 () -> {
-                    return SystemIconManager.hasLoadedAnyImages();
+                    return SystemIconManager.hasLoadedAnyImages() && !SystemIconManager.isCacheOutdated();
                 },
                 busy));
         refreshButton.disable(busy);
@@ -159,11 +158,6 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
     }
 
     private void updateData(TableView<List<SystemIcon>> table, String filterString) {
-        if (SystemIconManager.isCacheOutdated()) {
-            table.getItems().clear();
-            return;
-        }
-
         var available = icons.stream()
                 .filter(systemIcon -> AppImages.hasImage(
                         "icons/" + systemIcon.getSource().getId() + "/" + systemIcon.getId() + "-40.png"))
@@ -172,7 +166,9 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
         available.addFirst(new SystemIcon(null, "default"));
 
         List<SystemIcon> shown;
-        if (filterString != null && !filterString.isBlank() && filterString.strip().length() >= 2) {
+        if (filterString != null
+                && !filterString.isBlank()
+                && filterString.strip().length() >= 2) {
             shown = available.stream()
                     .filter(icon -> containsString(icon.getId(), filterString.strip()))
                     .collect(Collectors.toCollection(ArrayList::new));
@@ -249,13 +245,13 @@ public class StoreIconChoiceComp extends ModalOverlayContentComp {
 
             if (icon.getSource() == null) {
                 root.setText(AppI18n.get("default"));
-                image.setValue(entry.getProvider().getDisplayIconFileName(entry.getStore()));
+                image.setValue(defaultIcon);
                 setGraphic(root);
                 return;
             }
 
             root.setText(icon.getId());
-            image.set(SystemIconManager.getAndLoadIconFile(icon));
+            image.set(SystemIconManager.getAndLoadIconFile(icon, false));
             setGraphic(root);
         }
     }

@@ -49,10 +49,11 @@ public class ScriptCollectionSourceImportDialog {
     }
 
     private StoreCategoryWrapper findDefaultCategory() {
-        var all = StoreViewState.get().getSortedCategories(StoreViewState.get().getAllScriptsCategory())
-                .filtered(w -> w.getParent() != null &&
-                        !w.getCategory().getUuid().equals(DataStorage.PREDEFINED_SCRIPTS_CATEGORY_UUID) &&
-                        !w.getCategory().getUuid().equals(DataStorage.SCRIPT_SOURCES_CATEGORY_UUID));
+        var all = StoreViewState.get()
+                .getSortedCategories(StoreViewState.get().getAllScriptsCategory(), false)
+                .filtered(w -> w.getParent() != null
+                        && !w.getCategory().getUuid().equals(DataStorage.PREDEFINED_SCRIPTS_CATEGORY_UUID)
+                        && !w.getCategory().getUuid().equals(DataStorage.SCRIPT_SOURCES_CATEGORY_UUID));
         return all.getList().size() > 0 ? all.getList().getFirst() : null;
     }
 
@@ -102,13 +103,14 @@ public class ScriptCollectionSourceImportDialog {
         stack.prefWidth(600);
         stack.prefHeight(650);
 
-        var catChoice = new DataStoreCategoryChoiceComp(
+        var catChoice = new StoreCategoryChoiceComp(
                 StoreViewState.get().getAllScriptsCategory(),
                 StoreViewState.get().getActiveCategory(),
                 targetCategory,
                 false,
                 w -> {
-                    return w.getParent() != null && !w.equals(StoreViewState.get().getScriptSourcesCategory());
+                    return w.getParent() != null
+                            && !w.equals(StoreViewState.get().getScriptSourcesCategory());
                 });
         catChoice.hgrow();
         catChoice.maxHeight(100);

@@ -23,7 +23,6 @@ import io.xpipe.app.terminal.TerminalSplitStrategy;
 import io.xpipe.app.update.AppDistributionType;
 import io.xpipe.app.util.*;
 import io.xpipe.app.vnc.ExternalVncClient;
-import io.xpipe.app.vnc.InternalVncClient;
 import io.xpipe.app.vnc.VncCategory;
 import io.xpipe.core.FilePath;
 import io.xpipe.core.OsType;
@@ -39,12 +38,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Value;
+import lombok.*;
 
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 public final class AppPrefs {
@@ -346,7 +345,6 @@ public final class AppPrefs {
             .property(new GlobalBooleanProperty(false))
             .key("enableTerminalLogging")
             .valueClass(Boolean.class)
-            .licenseFeatureId("logging")
             .documentationLink(DocumentationLink.TERMINAL_LOGGING)
             .build());
     final BooleanProperty enableTerminalStartupBell = map(Mapping.builder()
@@ -425,7 +423,6 @@ public final class AppPrefs {
             new SyncCategory(),
             new PasswordManagerCategory(),
             new TerminalCategory(),
-            new LoggingCategory(),
             new EditorCategory(),
             new RdpCategory(),
             new VncCategory(),
@@ -836,6 +833,7 @@ public final class AppPrefs {
         rdpClientType.setValue(ExternalRdpClient.determineDefault(rdpClientType.get()));
         spiceClient.setValue(ExternalSpiceClient.determineDefault(spiceClient.getValue()));
         vncClient.setValue(ExternalVncClient.determineDefault(vncClient.getValue()));
+        passwordManager.setValue(PasswordManager.determineDefault(passwordManager.getValue()));
 
         PrefsProvider.getAll().forEach(prov -> prov.initDefaultValues());
     }
@@ -868,11 +866,23 @@ public final class AppPrefs {
         }
 
         if (OsType.ofLocal() != OsType.WINDOWS) {
+            var changeDate = LocalDate.of(2026, 3, 25).atStartOfDay(ZoneId.systemDefault()).toInstant();
+            var removePasswordManagerAgent = AppProperties.get().getFirstStartupDate().compareTo(changeDate) > 0;
+
             // On Linux and macOS, we prefer the shell variable compared to any global env variable
             // as the one is set by default and might not be the right one
             // This happens for example with homebrew ssh
             var shellVariable = LocalShell.getShell().view().getEnvironmentVariable("SSH_AUTH_SOCK");
-            var socketEnvVariable = shellVariable.isEmpty() ? System.getenv("SSH_AUTH_SOCK") : shellVariable.get();
+            if (shellVariable.isPresent() && removePasswordManagerAgent && PasswordManager.isPasswordManagerSshAgent(shellVariable.get())) {
+                shellVariable = Optional.empty();
+            }
+
+            var envVariable = System.getenv("SSH_AUTH_SOCK");
+            if (envVariable != null && removePasswordManagerAgent && PasswordManager.isPasswordManagerSshAgent(envVariable)) {
+                envVariable = null;
+            }
+
+            var socketEnvVariable = shellVariable.isEmpty() ? envVariable : shellVariable.get();
             defaultSshAgentSocket.setValue(FilePath.parse(socketEnvVariable));
         }
 
@@ -929,11 +939,15 @@ public final class AppPrefs {
             PlatformThread.runLaterIfNeeded(() -> {
                 AppLayoutModel.get().selectSettings();
 
-                Platform.runLater(() -> {
-                    // Reset scroll in case the target category is already somewhat in focus
-                    selectedCategory.setValue(null);
-                    selectedCategory.setValue(appPrefsCategory);
-                });
+                GlobalTimer.delay(
+                        () -> {
+                            Platform.runLater(() -> {
+                                // Reset scroll in case the target category is already somewhat in focus
+                                selectedCategory.setValue(null);
+                                selectedCategory.setValue(appPrefsCategory);
+                            });
+                        },
+                        Duration.ofMillis(100));
             });
         });
     }

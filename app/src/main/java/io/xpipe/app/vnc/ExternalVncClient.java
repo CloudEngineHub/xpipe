@@ -3,7 +3,6 @@ package io.xpipe.app.vnc;
 import io.xpipe.app.ext.PrefsValue;
 import io.xpipe.app.platform.ClipboardHelper;
 import io.xpipe.app.prefs.AppPrefs;
-import io.xpipe.app.rdp.*;
 import io.xpipe.core.OsType;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -23,7 +22,7 @@ public interface ExternalVncClient extends PrefsValue {
         if (!client.supportsPasswords() && configuration.hasFixedPassword()) {
             var pw = configuration.retrievePassword();
             if (pw.isPresent()) {
-                ClipboardHelper.copyPassword(pw.get());
+                ClipboardHelper.copyPassword(pw.get(), false);
             }
         }
 
@@ -57,7 +56,6 @@ public interface ExternalVncClient extends PrefsValue {
         return l;
     }
 
-
     static ExternalVncClient determineDefault(ExternalVncClient existing) {
         // Verify that our selection is still valid
         if (existing != null && existing.isAvailable()) {
@@ -76,14 +74,15 @@ public interface ExternalVncClient extends PrefsValue {
             }
         }
 
-        var found = l.stream().filter(externalVncClient -> externalVncClient.isAvailable()).findFirst();
+        var found = l.stream()
+                .filter(externalVncClient -> externalVncClient.isAvailable())
+                .findFirst();
         if (found.isPresent()) {
             return found.get();
         }
 
         return new InternalVncClient();
     }
-
 
     void launch(VncLaunchConfig configuration) throws Exception;
 

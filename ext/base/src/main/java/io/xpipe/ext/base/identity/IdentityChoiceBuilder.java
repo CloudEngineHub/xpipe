@@ -4,6 +4,8 @@ import io.xpipe.app.comp.RegionBuilder;
 import io.xpipe.app.comp.base.ButtonComp;
 import io.xpipe.app.comp.base.InputGroupComp;
 import io.xpipe.app.core.AppI18n;
+import io.xpipe.app.cred.SshIdentityStrategy;
+import io.xpipe.app.cred.SshIdentityStrategyChoiceConfig;
 import io.xpipe.app.ext.ProcessControlProvider;
 import io.xpipe.app.ext.ShellStore;
 import io.xpipe.app.platform.LabelGraphic;
@@ -16,8 +18,6 @@ import io.xpipe.app.storage.DataStorage;
 import io.xpipe.app.storage.DataStorageUserHandler;
 import io.xpipe.app.storage.DataStoreEntryRef;
 import io.xpipe.app.util.*;
-import io.xpipe.ext.base.identity.ssh.SshIdentityStrategy;
-import io.xpipe.ext.base.identity.ssh.SshIdentityStrategyChoiceConfig;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
@@ -85,7 +85,7 @@ public class IdentityChoiceBuilder {
                 .allowNull(false)
                 .property(identity)
                 .customConfiguration(config)
-                .available(SshIdentityStrategy.getSubclasses())
+                .available(SshIdentityStrategy.getAvailable())
                 .transformer(entryComboBox -> {
                     var button = new ButtonComp(null, new LabelGraphic.IconGraphic("mdi2k-key-plus"), () -> {
                         ProcessControlProvider.get().showSshKeygenDialog(null, identity);

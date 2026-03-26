@@ -4,27 +4,22 @@ import io.xpipe.app.comp.BaseRegionBuilder;
 import io.xpipe.app.comp.RegionStructure;
 import io.xpipe.app.comp.RegionStructureBuilder;
 import io.xpipe.app.core.AppLayoutModel;
-import io.xpipe.app.core.AppRestart;
-import io.xpipe.app.core.window.AppDialog;
-import io.xpipe.app.hub.comp.StoreViewState;
 import io.xpipe.app.platform.PlatformThread;
-import io.xpipe.app.prefs.AppPrefs;
-import io.xpipe.app.storage.DataStorage;
+import io.xpipe.app.terminal.TerminalDockHubManager;
 
-import io.xpipe.app.util.GlobalTimer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ButtonBase;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import org.bouncycastle.math.raw.Mod;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,7 +42,7 @@ public class AppLayoutComp extends RegionStructureBuilder<BorderPane, AppLayoutC
                                 model.getSelected()),
                         (v1, v2) -> v2,
                         LinkedHashMap::new));
-        var multi = new MultiContentComp(true, map, true);
+        var multi = new MultiContentComp(true, map);
         multi.style("background");
 
         var pane = new BorderPane();
@@ -56,34 +51,6 @@ public class AppLayoutComp extends RegionStructureBuilder<BorderPane, AppLayoutC
         pane.setCenter(multiR);
         var sidebarR = sidebar.build();
         pane.setRight(sidebarR);
-        model.getSelected().addListener((c, o, n) -> {
-            if (o != null && o.equals(model.getEntries().get(2))) {
-                var prefs = AppPrefs.get();
-                if (prefs != null) {
-                    prefs.save();
-                }
-                var storage = DataStorage.get();
-                if (storage != null) {
-                    storage.saveAsync();
-                }
-
-                if (AppPrefs.get() != null && AppPrefs.get().getRequiresRestart().get()) {
-                    GlobalTimer.delay(() -> {
-                        var modal = ModalOverlay.of("prefsRestartTitle", AppDialog.dialogTextKey("prefsRestartContent"));
-                        modal.addButton(ModalButton.cancel());
-                        modal.addButton(new ModalButton("restart", () -> AppRestart.restart(), true, true));
-                        modal.show();
-                    }, Duration.ofSeconds(1));
-                }
-            }
-
-            if (o != null && o.equals(model.getEntries().get(0))) {
-                var svs = StoreViewState.get();
-                if (svs != null) {
-                    svs.triggerStoreListUpdate();
-                }
-            }
-        });
         pane.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             sidebarR.getChildrenUnmodifiable().forEach(node -> {
                 var shortcut = (KeyCodeCombination) node.getProperties().get("shortcut");
@@ -92,6 +59,13 @@ public class AppLayoutComp extends RegionStructureBuilder<BorderPane, AppLayoutC
                     event.consume();
                 }
             });
+
+            if (new KeyCodeCombination(KeyCode.T, KeyCombination.SHORTCUT_DOWN).match(event)) {
+                if (TerminalDockHubManager.get().getEnabled().get()) {
+                    TerminalDockHubManager.get().toggleDock();
+                    event.consume();
+                }
+            }
         });
         pane.getStyleClass().add("layout");
         return new Structure(pane, multiR, sidebarR, new ArrayList<>(multiR.getChildren()));

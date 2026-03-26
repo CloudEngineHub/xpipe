@@ -11,6 +11,7 @@ import io.xpipe.app.core.AppLayoutModel;
 import io.xpipe.app.core.window.AppMainWindow;
 import io.xpipe.app.ext.ShellStore;
 import io.xpipe.app.hub.comp.StoreEntryWrapper;
+import io.xpipe.app.hub.comp.StoreFilter;
 import io.xpipe.app.hub.comp.StoreViewState;
 import io.xpipe.app.platform.BindingsHelper;
 import io.xpipe.app.platform.InputHelper;
@@ -23,7 +24,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -90,7 +90,7 @@ public class BrowserFullSessionComp extends SimpleRegionBuilder {
                     leftSplit.set(d);
                 });
         splitPane.applyStructure(struc -> {
-            struc.getLeft().setMinWidth(200);
+            struc.getLeft().setMinWidth(250);
             struc.getLeft().setMaxWidth(500);
             struc.get().setPickOnBounds(false);
         });
@@ -149,7 +149,7 @@ public class BrowserFullSessionComp extends SimpleRegionBuilder {
 
         var category = new SimpleObjectProperty<>(
                 StoreViewState.get().getActiveCategory().getValue());
-        var filter = new SimpleStringProperty();
+        var filter = new SimpleObjectProperty<StoreFilter>();
         var bookmarkTopBar = new BrowserConnectionListFilterComp(filterTrigger, category, filter);
         var bookmarksList = new BrowserConnectionListComp(
                 BindingsHelper.map(
@@ -165,6 +165,7 @@ public class BrowserFullSessionComp extends SimpleRegionBuilder {
         bookmarksContainer
                 .apply(struc -> {
                     var rec = new Rectangle();
+                    rec.setSmooth(false);
                     rec.widthProperty().bind(struc.widthProperty());
                     rec.heightProperty().bind(struc.heightProperty());
                     rec.setArcHeight(11);
@@ -225,6 +226,7 @@ public class BrowserFullSessionComp extends SimpleRegionBuilder {
             });
 
             var clip = new Rectangle();
+            clip.setSmooth(false);
             clip.widthProperty().bind(struc.widthProperty());
             clip.heightProperty().bind(struc.heightProperty());
             struc.setClip(clip);

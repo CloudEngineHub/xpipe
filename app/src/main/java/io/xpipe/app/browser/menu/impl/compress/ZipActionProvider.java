@@ -53,13 +53,10 @@ public class ZipActionProvider implements BrowserActionProvider {
                         }
                     }
 
-                    if (ShellDialects.isPowershell(sc)) {
-                        sc.command(command).withWorkingDirectory(base).execute();
-                    } else {
-                        try (var sub = sc.subShell(ShellDialects.POWERSHELL)) {
-                            sub.command(command).withWorkingDirectory(base).execute();
-                        }
-                    }
+                    sc.enforceDialect(ShellDialects.POWERSHELL, p -> {
+                        p.command(command).withWorkingDirectory(base).execute();
+                        return null;
+                    });
                 } else {
                     var command = CommandBuilder.of().add("zip", "-q", "-y", "-r", "-");
                     for (BrowserEntry entry : getEntries()) {

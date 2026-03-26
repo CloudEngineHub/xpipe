@@ -51,6 +51,11 @@ public class TerminalMultiplexerManager {
             return Optional.empty();
         }
 
+        var terminal = AppPrefs.get().terminalType().getValue();
+        if (!(terminal instanceof TrackableTerminalType)) {
+            return Optional.empty();
+        }
+
         if (OsType.ofLocal() == OsType.WINDOWS) {
             var hasProxy = AppPrefs.get().terminalProxy().getValue() != null;
             if (!hasProxy) {
@@ -77,8 +82,9 @@ public class TerminalMultiplexerManager {
 
                 ThreadHelper.sleep(100);
             }
-            // Give multiplexer a second to start in terminal
-            ThreadHelper.sleep(1000);
+
+            // We timed out
+            pendingMultiplexerLaunch = null;
         }
 
         // Synchronize between multiple existing tab launches as well as some multiplexers might break there
@@ -104,6 +110,20 @@ public class TerminalMultiplexerManager {
     }
 
     public static Optional<UUID> getActiveMultiplexerContainerRequest() {
+        var mult = getEffectiveMultiplexer();
+        if (mult.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Check for changed multiplexer
+        var session = TerminalView.get().getSessions().stream()
+                .filter(shellSession -> shellSession.getTerminal().isRunning()
+                        && mult.get() == connectionHubRequests.get(shellSession.getRequest()))
+                .findFirst();
+        if (session.isEmpty()) {
+            return Optional.empty();
+        }
+
         return Optional.ofNullable(runningMultiplexerContainer);
     }
 

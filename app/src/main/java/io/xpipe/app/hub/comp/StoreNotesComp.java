@@ -3,12 +3,9 @@ package io.xpipe.app.hub.comp;
 import io.xpipe.app.comp.*;
 import io.xpipe.app.comp.base.*;
 import io.xpipe.app.core.AppFontSizes;
-import io.xpipe.app.platform.BindingsHelper;
 import io.xpipe.app.storage.DataStorage;
-
 import io.xpipe.app.util.FileOpener;
-import javafx.application.Platform;
-import javafx.beans.property.Property;
+
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Button;
@@ -26,16 +23,24 @@ public class StoreNotesComp extends RegionBuilder<Button> {
 
         var modal = ModalOverlay.of(new ReadOnlyStringWrapper(wrapper.getName().getValue()), md, null);
         if (wrapper.getNotes().getValue() != null) {
-            modal.addButton(new ModalButton("delete", () -> {
-                wrapper.getEntry().setNotes(null);
-                DataStorage.get().saveAsync();
-            }, true, false));
+            modal.addButton(new ModalButton(
+                    "delete",
+                    () -> {
+                        wrapper.getEntry().setNotes(null);
+                        DataStorage.get().saveAsync();
+                    },
+                    true,
+                    false));
         }
         modal.addButton(new ModalButton("cancel", () -> {}, true, false));
-        modal.addButton(new ModalButton("apply", () -> {
-            wrapper.getEntry().setNotes(prop.getValue());
-            DataStorage.get().saveAsync();
-        }, true, true));
+        modal.addButton(new ModalButton(
+                "apply",
+                () -> {
+                    wrapper.getEntry().setNotes(prop.getValue());
+                    DataStorage.get().saveAsync();
+                },
+                true,
+                true));
         modal.show();
     }
 
@@ -66,7 +71,8 @@ public class StoreNotesComp extends RegionBuilder<Button> {
         var editKey = UUID.randomUUID().toString();
         button.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.isShiftDown()) {
-                FileOpener.openString("notes.md", editKey, wrapper.getNotes().getValue(), s -> wrapper.getEntry().setNotes(s));
+                FileOpener.openString("notes.md", editKey, wrapper.getNotes().getValue(), s -> wrapper.getEntry()
+                        .setNotes(s));
                 e.consume();
             }
         });

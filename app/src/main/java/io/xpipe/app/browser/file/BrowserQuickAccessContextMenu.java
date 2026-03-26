@@ -84,6 +84,7 @@ public class BrowserQuickAccessContextMenu extends ContextMenu {
     }
 
     public void showMenu(Node anchor) {
+        keyBasedNavigation = true;
         getItems().clear();
         ThreadHelper.runFailableAsync(() -> {
             var entry = base.get();
@@ -264,7 +265,9 @@ public class BrowserQuickAccessContextMenu extends ContextMenu {
                 }
             });
             new BooleanAnimationTimer(hover, 100, () -> {
-                        expandDirectoryMenu(empty);
+                        if (!keyBasedNavigation) {
+                            expandDirectoryMenu(empty);
+                        }
                     })
                     .start();
         }
@@ -289,7 +292,12 @@ public class BrowserQuickAccessContextMenu extends ContextMenu {
                         }
                     });
                     contextMenu.addEventFilter(MouseEvent.ANY, event -> {
-                        keyBasedNavigation = false;
+                        var mouseEvent = event.getEventType() == MouseEvent.MOUSE_PRESSED
+                                || event.getEventType() == MouseEvent.MOUSE_MOVED;
+                        keyBasedNavigation = keyBasedNavigation && !mouseEvent;
+                        if (keyBasedNavigation) {
+                            event.consume();
+                        }
                     });
                 }
             });

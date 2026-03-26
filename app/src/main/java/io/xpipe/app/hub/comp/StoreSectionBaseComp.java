@@ -91,12 +91,12 @@ public abstract class StoreSectionBaseComp extends RegionBuilder<VBox> {
     protected void addVisibilityListeners(VBox root, Pane pane, Supplier<HBox> hbox) {
         AtomicReference<HBox> built = new AtomicReference<>();
         Consumer<Boolean> update = (visible) -> {
-            if (visible) {
-                // Ignore any changes before this was added to the scene
-                if (root.getScene() == null && built.get() == null) {
-                    return;
-                }
+            // Ignore any changes before this was added to the scene
+            if (root.getScene() == null) {
+                return;
+            }
 
+            if (visible) {
                 if (!root.isVisible()) {
                     return;
                 }
@@ -117,12 +117,22 @@ public abstract class StoreSectionBaseComp extends RegionBuilder<VBox> {
 
         root.visibleProperty().subscribe((newValue) -> {
             if (root.getScene() == null) {
-                update.accept(newValue);
-            } else {
-                Platform.runLater(() -> {
-                    update.accept(newValue);
-                });
+                return;
             }
+
+            Platform.runLater(() -> {
+                update.accept(root.isVisible());
+            });
+        });
+
+        root.sceneProperty().subscribe(newValue -> {
+            if (newValue == null) {
+                return;
+            }
+
+            Platform.runLater(() -> {
+                update.accept(root.isVisible());
+            });
         });
     }
 
@@ -162,18 +172,12 @@ public abstract class StoreSectionBaseComp extends RegionBuilder<VBox> {
     }
 
     protected RegionBuilder<Button> createQuickAccessButton(int width, Consumer<StoreSection> r) {
-        var quickAccessDisabled = Bindings.createBooleanBinding(
-                () -> {
-                    return section.getShownChildren().getList().isEmpty();
-                },
-                section.getShownChildren().getList());
         var quickAccessButton = new StoreQuickAccessButtonComp(section, r)
                 .style("quick-access-button")
                 .minWidth(width)
                 .prefWidth(width)
                 .maxHeight(100)
-                .describe(d -> d.nameKey("quickAccess"))
-                .disable(quickAccessDisabled);
+                .describe(d -> d.nameKey("quickAccess"));
         return quickAccessButton;
     }
 }

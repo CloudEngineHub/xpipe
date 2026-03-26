@@ -18,7 +18,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -82,7 +81,7 @@ public class StoreChoicePopover<T extends DataStore> {
                             : (rootCategory != null
                                     ? (rootCategory.getRoot().equals(cur.getRoot()) ? cur : rootCategory)
                                     : cur));
-            var filterText = new SimpleStringProperty();
+            var storeFilter = new SimpleObjectProperty<StoreFilter>();
             popover = new Popover();
             Predicate<StoreEntryWrapper> applicable = storeEntryWrapper -> {
                 var e = storeEntryWrapper.getEntry();
@@ -120,7 +119,7 @@ public class StoreChoicePopover<T extends DataStore> {
                             StoreViewState.get().getAllEntries(),
                             Set.of(),
                             applicable,
-                            filterText,
+                            storeFilter,
                             selectedCategory,
                             StoreViewState.get().getEntriesListVisibilityObservable(),
                             StoreViewState.get().getEntriesListUpdateObservable(),
@@ -138,14 +137,16 @@ public class StoreChoicePopover<T extends DataStore> {
                     },
                     initialExpanded);
 
-            var category = new DataStoreCategoryChoiceComp(
+            var category = new StoreCategoryChoiceComp(
                             rootCategory != null ? rootCategory.getRoot() : null,
                             StoreViewState.get().getActiveCategory(),
                             selectedCategory,
                             explicitCategory == null,
-                    ignored -> true)
+                            ignored -> true)
                     .style(Styles.LEFT_PILL);
-            var filter = new FilterComp(filterText).style(Styles.CENTER_PILL).hgrow();
+            var filter = FilterComp.ofStoreFilter(storeFilter)
+                    .style(Styles.CENTER_PILL)
+                    .hgrow();
 
             var addButton = RegionBuilder.of(() -> {
                         var m = MenuHelper.createMenuButton();
@@ -204,7 +205,7 @@ public class StoreChoicePopover<T extends DataStore> {
             content.setFillWidth(true);
             content.getStyleClass().add("choice-comp-content");
             content.setPrefWidth(480);
-            content.setMaxHeight(550);
+            content.setMaxHeight(430);
 
             popover.setContentNode(content);
             popover.setCloseButtonEnabled(true);

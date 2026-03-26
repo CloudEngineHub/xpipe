@@ -52,7 +52,6 @@ public class AppMainWindow {
 
     private final BooleanProperty windowActive = new SimpleBooleanProperty(false);
     private volatile Instant lastUpdate;
-    private boolean shown = false;
 
     private AppMainWindow(Stage stage) {
         this.stage = stage;
@@ -189,8 +188,16 @@ public class AppMainWindow {
                 AppWindowsShutdown.registerHook(ctrl.getWindowHandle());
             }
         }
+    }
 
-        shown = true;
+    public void hide() {
+        PlatformThread.runLaterIfNeeded(() -> {
+            if (!stage.isShowing()) {
+                return;
+            }
+
+            stage.hide();
+        });
     }
 
     public void focus() {
@@ -299,12 +306,6 @@ public class AppMainWindow {
 
             // Close other windows
             Stage.getWindows().stream().filter(w -> !w.equals(stage)).toList().forEach(w -> w.fireEvent(e));
-
-            // Iconifying stages on Windows will break if the window is closed
-            // Work around this issue it by re-showing it immediately before hiding it again
-            if (OsType.ofLocal() == OsType.WINDOWS) {
-                stage.setIconified(false);
-            }
 
             // Close self
             stage.close();

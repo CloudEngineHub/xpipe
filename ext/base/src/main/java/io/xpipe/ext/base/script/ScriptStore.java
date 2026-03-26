@@ -38,8 +38,6 @@ public class ScriptStore implements SelfReferentialStore, StatefulDataStore<Enab
     boolean fileScript;
     boolean runnableScript;
 
-
-
     @Override
     public Class<EnabledStoreState> getStateClass() {
         return EnabledStoreState.class;
@@ -77,7 +75,7 @@ public class ScriptStore implements SelfReferentialStore, StatefulDataStore<Enab
             var canSource = targetType.isSourceCompatibleTo(scriptDialect);
             var base = canSource
                     ? targetType.sourceScriptCommand(shellControl, script.toString())
-                    : targetType.runScriptCommand(shellControl, script.toString());
+                    : scriptDialect.runScriptInOtherDialectCommand(shellControl, script.toString());
             return base + (args ? " " + targetType.getCatchAllVariable() : "");
         }
 
@@ -112,6 +110,15 @@ public class ScriptStore implements SelfReferentialStore, StatefulDataStore<Enab
         var scriptDialect = getShellDialect() != null ? getShellDialect() : targetType;
         var content = scriptDialect.prepareScriptContent(shellControl, raw);
         return ShellScript.of(content);
+    }
+
+    @Override
+    public List<DataStoreEntryRef<?>> getDependencies() {
+        var l = DataStoreDependencies.of(scripts);
+        if (textSource != null) {
+            l.addAll(textSource.getDependencies());
+        }
+        return l;
     }
 
     @Override

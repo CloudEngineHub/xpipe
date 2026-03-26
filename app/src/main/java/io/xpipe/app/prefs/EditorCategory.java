@@ -24,7 +24,7 @@ public class EditorCategory extends AppPrefsCategory {
                     ThreadHelper.runFailableAsync(() -> {
                         var editor = AppPrefs.get().externalEditor().getValue();
                         if (editor != null) {
-                            FileOpener.openReadOnlyString("If you can read this, the editor integration is working");
+                            FileOpener.openReadOnlyString("If you can read this, the editor integration works");
                         }
                     });
                 })
@@ -77,7 +77,7 @@ public class EditorCategory extends AppPrefsCategory {
     @Override
     protected BaseRegionBuilder<?, ?> create() {
         return new OptionsBuilder()
-                .addTitle("editorConfiguration")
+                .title("editorConfiguration")
                 .sub(editorChoice())
                 .buildComp();
     }

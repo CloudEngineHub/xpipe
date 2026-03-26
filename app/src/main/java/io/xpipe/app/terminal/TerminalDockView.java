@@ -5,9 +5,7 @@ import io.xpipe.app.platform.NativeWinWindowControl;
 import io.xpipe.app.prefs.AppPrefs;
 import io.xpipe.app.util.GlobalTimer;
 import io.xpipe.app.util.Rect;
-
 import io.xpipe.app.util.ThreadHelper;
-import lombok.Getter;
 
 import java.time.Duration;
 import java.util.HashSet;
@@ -17,7 +15,6 @@ import java.util.function.UnaryOperator;
 
 public class TerminalDockView {
 
-    @Getter
     private final Set<ControllableTerminalSession> terminalInstances = new HashSet<>();
 
     private final UnaryOperator<Rect> windowBoundsFunction;
@@ -54,10 +51,10 @@ public class TerminalDockView {
             if (wasCustom && viewBounds != null && viewActive) {
                 var currentBounds = terminal.getLastBounds();
                 var targetBounds = windowBoundsFunction.apply(viewBounds);
-                var sum = Math.abs(targetBounds.getX() - currentBounds.getX()) +
-                        Math.abs(targetBounds.getY() - currentBounds.getY()) +
-                        Math.abs(targetBounds.getW() - currentBounds.getW()) +
-                        Math.abs(targetBounds.getH() - currentBounds.getH());
+                var sum = Math.abs(targetBounds.getX() - currentBounds.getX())
+                        + Math.abs(targetBounds.getY() - currentBounds.getY())
+                        + Math.abs(targetBounds.getW() - currentBounds.getW())
+                        + Math.abs(targetBounds.getH() - currentBounds.getH());
                 if (sum < 30) {
                     ThreadHelper.sleep(300);
                     trackTerminal(terminal, true);
@@ -74,7 +71,11 @@ public class TerminalDockView {
     }
 
     public synchronized void trackTerminal(ControllableTerminalSession terminal, boolean dock) {
-        if (viewActive && dock && viewBounds != null && NativeWinWindowControl.MAIN_WINDOW.isVisible() && !NativeWinWindowControl.MAIN_WINDOW.isIconified()) {
+        if (viewActive
+                && dock
+                && viewBounds != null
+                && NativeWinWindowControl.MAIN_WINDOW.isVisible()
+                && !NativeWinWindowControl.MAIN_WINDOW.isIconified()) {
             // Bring main window to foreground since initial launch
             NativeWinWindowControl.MAIN_WINDOW.activate();
 
@@ -112,8 +113,8 @@ public class TerminalDockView {
         var others = terminalInstances.stream()
                 .filter(terminal -> terminal.getTerminalProcess().isAlive())
                 .filter(terminal -> TerminalView.get().getSessions().stream()
-                        .noneMatch(shellSession -> shellSession.getRequest().equals(request) &&
-                                shellSession.getTerminal().equals(terminal)))
+                        .noneMatch(shellSession -> shellSession.getRequest().equals(request)
+                                && shellSession.getTerminal().equals(terminal)))
                 .toList();
         for (ControllableTerminalSession other : others) {
             closeTerminal(other);
@@ -132,6 +133,7 @@ public class TerminalDockView {
         terminal.restoreStyle();
 
         terminal.close();
+        // If the process blocked the exit, still don't track it anymore
         terminalInstances.remove(terminal);
     }
 
@@ -264,10 +266,10 @@ public class TerminalDockView {
 
         terminalInstances.forEach(terminalInstance -> {
             terminalInstance.show();
-            terminalInstance.updatePosition(windowBoundsFunction.apply(viewBounds));
             terminalInstance.removeIcon();
             terminalInstance.own();
             terminalInstance.removeStyle();
+            terminalInstance.updatePosition(windowBoundsFunction.apply(viewBounds));
             terminalInstance.focus();
         });
     }

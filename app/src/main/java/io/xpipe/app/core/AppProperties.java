@@ -10,6 +10,8 @@ import lombok.Value;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 import java.util.*;
 
 @Value
@@ -234,5 +236,20 @@ public class AppProperties {
 
     public Optional<AppVersion> getCanonicalVersion() {
         return Optional.ofNullable(canonicalVersion);
+    }
+
+    public Instant getFirstStartupDate() {
+        var dir = defaultDataDir;
+        if (!Files.exists(dir)) {
+            return Instant.now();
+        }
+
+        try {
+            var attr = Files.readAttributes(dir, BasicFileAttributes.class);
+            return attr.creationTime().toInstant();
+        } catch (Exception e) {
+            ErrorEventFactory.fromThrowable(e).expected().omit().handle();
+            return Instant.now();
+        }
     }
 }

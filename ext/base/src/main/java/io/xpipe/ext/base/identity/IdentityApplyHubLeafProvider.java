@@ -3,6 +3,7 @@ package io.xpipe.ext.base.identity;
 import io.xpipe.app.action.AbstractAction;
 import io.xpipe.app.core.AppI18n;
 import io.xpipe.app.core.window.AppDialog;
+import io.xpipe.app.cred.NoIdentityStrategy;
 import io.xpipe.app.hub.action.HubLeafProvider;
 import io.xpipe.app.hub.action.StoreAction;
 import io.xpipe.app.hub.action.StoreActionCategory;
@@ -11,7 +12,6 @@ import io.xpipe.app.platform.LabelGraphic;
 import io.xpipe.app.process.ShellTtyState;
 import io.xpipe.app.process.SystemState;
 import io.xpipe.app.storage.DataStoreEntryRef;
-import io.xpipe.ext.base.identity.ssh.NoIdentityStrategy;
 
 import javafx.beans.value.ObservableValue;
 
@@ -75,7 +75,7 @@ public class IdentityApplyHubLeafProvider implements HubLeafProvider<IdentitySto
         public void executeImpl() {
             if (ref.getStore().getSshIdentity() != null
                     && !(ref.getStore().getSshIdentity() instanceof NoIdentityStrategy)
-                    && ref.getStore().getSshIdentity().getPublicKey() == null) {
+                    && ref.getStore().getSshIdentity().getPublicKeyStrategy() == null) {
                 AppDialog.confirm("identityApplyMissingPublicKey");
                 StoreCreationDialog.showEdit(ref.get());
                 return;

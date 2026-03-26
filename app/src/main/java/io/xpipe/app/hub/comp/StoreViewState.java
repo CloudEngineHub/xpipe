@@ -15,7 +15,6 @@ import io.xpipe.app.storage.StorageListener;
 import io.xpipe.app.util.GlobalTimer;
 
 import javafx.application.Platform;
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableIntegerValue;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
 public class StoreViewState {
 
     private static StoreViewState INSTANCE;
-    private final StringProperty filter = new SimpleStringProperty();
 
     @Getter
     private final DerivedObservableList<StoreEntryWrapper> allEntries =
@@ -97,9 +95,9 @@ public class StoreViewState {
 
         INSTANCE = new StoreViewState();
         INSTANCE.initSortMode();
-        INSTANCE.updateContent();
+        INSTANCE.updateWrappers();
         INSTANCE.initSections();
-        INSTANCE.updateContent();
+        INSTANCE.updateWrappers();
         INSTANCE.initFilterListener();
         INSTANCE.initBatchListeners();
         INSTANCE.initialized = true;
@@ -169,7 +167,7 @@ public class StoreViewState {
                 tieSortMode);
     }
 
-    public ObservableIntegerValue entriesCount(Predicate<StoreEntryWrapper> filter, Observable... observables) {
+    public ObservableIntegerValue entriesCount(Predicate<StoreEntryWrapper> filter, ObservableValue<?>... observables) {
         return Bindings.size(allEntries
                 .filtered(
                         storeEntryWrapper -> {
@@ -185,6 +183,20 @@ public class StoreViewState {
 
     public boolean isBatchModeSelected(StoreEntryWrapper entry) {
         return batchModeSelectionSet.contains(entry);
+    }
+
+    public void refreshActiveCategory() {
+        if (getActiveCategory().getValue().isHierarchyExpanded()) {
+            return;
+        }
+
+        StoreCategoryWrapper current = getActiveCategory().getValue();
+        while ((current = current.getParent()) != null) {
+            if (current.getParent() == null || current.getParent().getExpanded().get()) {
+                activeCategory.setValue(current);
+                break;
+            }
+        }
     }
 
     public void selectBatchMode(StoreSection section) {
@@ -223,7 +235,7 @@ public class StoreViewState {
         tieSortMode.setValue(tieMode != null ? tieMode : StoreSectionSortMode.DATE_ASC);
     }
 
-    private void updateContent() {
+    public void updateWrappers() {
         categories.getList().forEach(c -> c.update());
         allEntries.getList().forEach(e -> e.update());
     }
@@ -234,7 +246,7 @@ public class StoreViewState {
                     allEntries,
                     batchModeSelectionSet,
                     storeEntryWrapper -> true,
-                    filter,
+                    StoreFilterState.get().getEffectiveFilter(),
                     activeCategory,
                     entriesListVisibilityObservable,
                     entriesListUpdateObservable,
@@ -247,12 +259,12 @@ public class StoreViewState {
     }
 
     private void initFilterListener() {
-        filter.addListener((observable, oldValue, newValue) -> {
+        StoreFilterState.get().getEffectiveFilter().addListener((observable, oldValue, newValue) -> {
             onFilterUpdate(newValue);
         });
     }
 
-    private void onFilterUpdate(String newValue) {
+    private void onFilterUpdate(StoreFilter newValue) {
         var all = getAllConnectionsCategory();
         categories.getList().forEach(e -> {
             e.update();
@@ -381,6 +393,10 @@ public class StoreViewState {
                 });
             });
         }
+
+        getActiveCategory().addListener((observable, oldValue, newValue) -> {
+            refreshActiveCategory();
+        });
 
         // Watch out for synchronizing all calls to the entries and categories list!
         DataStorage.get().addListener(new StorageListener() {
@@ -567,7 +583,8 @@ public class StoreViewState {
         }
     }
 
-    public DerivedObservableList<StoreCategoryWrapper> getSortedCategories(StoreCategoryWrapper root) {
+    public DerivedObservableList<StoreCategoryWrapper> getSortedCategories(
+            StoreCategoryWrapper root, boolean requireExpanded) {
         Comparator<StoreCategoryWrapper> comparator = new Comparator<>() {
             @Override
             public int compare(StoreCategoryWrapper o1, StoreCategoryWrapper o2) {
@@ -622,6 +639,7 @@ public class StoreViewState {
         };
         return categories
                 .filtered(cat -> root == null || cat.getRoot().equals(root))
+                .filtered(storeCategoryWrapper -> !requireExpanded || storeCategoryWrapper.isHierarchyExpanded())
                 .sorted(comparator);
     }
 
@@ -687,9 +705,5 @@ public class StoreViewState {
                         storeCategoryWrapper.getCategory().equals(entry))
                 .findFirst()
                 .orElseThrow();
-    }
-
-    public Property<String> getFilterString() {
-        return filter;
     }
 }

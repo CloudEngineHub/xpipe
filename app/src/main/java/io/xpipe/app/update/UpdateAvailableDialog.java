@@ -7,16 +7,16 @@ import io.xpipe.app.issue.TrackEvent;
 
 public class UpdateAvailableDialog {
 
-    public static void showIfNeeded(boolean wait) {
+    public static boolean showIfNeeded(boolean wait) {
         UpdateHandler uh = AppDistributionType.get().getUpdateHandler();
         if (uh.getPreparedUpdate().getValue() == null) {
-            return;
+            return false;
         }
 
         // Check whether we still have the latest version prepared
         uh.refreshUpdateCheckSilent(false, uh.getPreparedUpdate().getValue().isSecurityOnly());
         if (uh.getPreparedUpdate().getValue() == null) {
-            return;
+            return false;
         }
 
         TrackEvent.withInfo("Showing update alert ...")
@@ -38,5 +38,6 @@ public class UpdateAvailableDialog {
         } else {
             modal.show();
         }
+        return true;
     }
 }
