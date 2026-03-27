@@ -28,15 +28,15 @@ public class AppRestart {
             var exec = loc.getCliExecutablePath();
             return "\"" + exec + "\" open" + suffix;
         } else {
-            var exe = loc.getDaemonDebugScriptPath();
+            var exe = loc.getDaemonExecutablePath();
             if (ShellDialects.isPowershell(dialect)) {
                 var escapedList =
                         arguments.stream().map(s -> s.replaceAll("\"", "`\"")).toList();
                 var argumentList = String.join(" ", escapedList);
-                return "Start-Process -FilePath \"" + exe + "\" -ArgumentList \"" + argumentList + "\"";
+                return "echo \"Starting XPipe ...\"; Start-Process -FilePath \"" + exe + "\" -ArgumentList \"" + argumentList + "\"";
             } else {
                 var base = "\"" + exe + "\"" + suffix;
-                return "start \"\" " + base;
+                return "echo Starting XPipe ...&start \"\" " + base;
             }
         }
     }

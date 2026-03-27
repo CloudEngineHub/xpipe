@@ -7,10 +7,7 @@ import io.xpipe.app.core.AppProperties;
 import io.xpipe.app.core.AppRestart;
 import io.xpipe.app.core.mode.AppOperationMode;
 import io.xpipe.app.issue.ErrorEventFactory;
-import io.xpipe.app.process.CommandBuilder;
-import io.xpipe.app.process.LocalShell;
-import io.xpipe.app.process.ShellDialects;
-import io.xpipe.app.process.ShellScript;
+import io.xpipe.app.process.*;
 import io.xpipe.app.terminal.TerminalLaunch;
 import io.xpipe.app.util.Hyperlinks;
 
@@ -74,8 +71,11 @@ public class ChocoUpdater extends UpdateHandler {
                     var powershellCommand = powershell
                             ? "powershell -Command " + sc.getShellDialect().quoteArgument(commandToRun)
                             : "powershell -Command " + commandToRun;
-                    return ShellScript.lines(powershellCommand, AppRestart.getTerminalRestartCommand());
-                });
+                    return ShellScript.lines(
+                            ShellDialects.isPowershell(sc) ? "echo \"Running choco command ...\"" : "echo Running choco command ...",
+                            powershellCommand,
+                            AppRestart.getTerminalRestartCommand());
+                }).launch();
             });
         } catch (Throwable t) {
             ErrorEventFactory.fromThrowable(t).handle();
@@ -89,7 +89,7 @@ public class ChocoUpdater extends UpdateHandler {
 
         var chocoRelease = getOutdatedPackageUpdateVersion();
         // Use current release if the update is not available for choco yet
-        if (chocoRelease.isEmpty() || !chocoRelease.get().equals(rel.getTag())) {
+        if (chocoRelease.isEmpty() || (!chocoRelease.get().equals(rel.getTag()) && !chocoRelease.get().equals(rel.getTag() + ".0"))) {
             rel = AppRelease.of(AppProperties.get().getVersion());
         }
 
