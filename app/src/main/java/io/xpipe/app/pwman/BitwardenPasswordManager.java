@@ -256,7 +256,7 @@ public class BitwardenPasswordManager implements PasswordManager {
     }
 
     private static void sync() throws Exception {
-        // Copy existing file if possible to retain configuration. Only once per session
+        // Copy existing file if possible to retain configuration
         copyConfigIfNeeded();
 
         if (!loginOrUnlock()) {
@@ -338,7 +338,7 @@ public class BitwardenPasswordManager implements PasswordManager {
             }
         }
 
-        // Copy existing file if possible to retain configuration. Only once per session
+        // Copy existing file if possible to retain configuration
         copyConfigIfNeeded();
 
         try {
