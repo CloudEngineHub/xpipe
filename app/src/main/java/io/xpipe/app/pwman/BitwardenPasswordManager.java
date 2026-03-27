@@ -225,10 +225,13 @@ public class BitwardenPasswordManager implements PasswordManager {
         var syncButton = new ButtonComp(AppI18n.observable("sync"), new FontIcon("mdi2r-refresh"), () -> {
             button.get().setDisable(true);
             ThreadHelper.runFailableAsync(() -> {
-                sync();
-                Platform.runLater(() -> {
-                    button.get().setDisable(false);
-                });
+                try {
+                    sync();
+                } finally {
+                    Platform.runLater(() -> {
+                        button.get().setDisable(false);
+                    });
+                }
             });
         });
         syncButton.apply(struc -> button.set(struc));
