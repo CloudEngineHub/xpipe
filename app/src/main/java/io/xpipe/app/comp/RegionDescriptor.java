@@ -48,7 +48,7 @@ public class RegionDescriptor {
                         getName())
                 : null;
 
-        if (showTooltips) {
+        if (name != null && showTooltips) {
             var tooltipText = Bindings.createStringBinding(
                     () -> {
                         var s = "";
