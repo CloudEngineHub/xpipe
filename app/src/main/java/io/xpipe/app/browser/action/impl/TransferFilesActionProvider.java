@@ -4,7 +4,12 @@ import io.xpipe.app.action.AbstractAction;
 import io.xpipe.app.action.ActionProvider;
 import io.xpipe.app.action.StoreContextAction;
 import io.xpipe.app.browser.file.BrowserFileTransferOperation;
+import io.xpipe.app.core.AppCache;
+import io.xpipe.app.core.window.AppDialog;
+import io.xpipe.app.ext.ConnectionFileSystem;
 import io.xpipe.app.ext.FileSystemStore;
+import io.xpipe.app.process.ParentSystemAccess;
+import io.xpipe.app.process.ShellControl;
 import io.xpipe.app.storage.DataStorage;
 import io.xpipe.app.storage.DataStoreEntry;
 import io.xpipe.app.storage.DataStoreEntryRef;
@@ -37,8 +42,42 @@ public class TransferFilesActionProvider implements ActionProvider {
 
         boolean download;
 
+        private boolean showSshNotice() throws Exception {
+            var shown = AppCache.getBoolean("sftpDialogShown", false);
+            if (shown) {
+                return true;
+            }
+
+            var sourceFs = operation.getFiles().getFirst().getFileSystem();
+            var sourceAccess = sourceFs.getShell().map(ShellControl::getLocalSystemAccess).orElse(null);
+            var sourceSlowRemote = sourceAccess != null && ParentSystemAccess.isEquivalent(sourceAccess, ParentSystemAccess.none());
+
+            var targetFs = operation.getTarget().getFileSystem();
+            var targetAccess = targetFs.getShell().map(ShellControl::getLocalSystemAccess).orElse(null);
+            var targetSlowRemote = targetAccess != null && ParentSystemAccess.isEquivalent(targetAccess, ParentSystemAccess.none());
+
+            if (!sourceSlowRemote && !targetSlowRemote) {
+                return true;
+            }
+
+            var sourceLarge = operation.getFiles().stream().anyMatch(fileEntry -> {
+                return fileEntry.getFileSizeLong().orElse(0) > 1_000_000_000;
+            });
+            if (!sourceLarge) {
+                return true;
+            }
+
+            var r = AppDialog.confirm("sftpNotice");
+            AppCache.update("sftpDialogShown", true);
+            return r;
+        }
+
         @Override
         public void executeImpl() throws Exception {
+            if (!showSshNotice()) {
+                return;
+            }
+
             operation.execute();
         }
 
