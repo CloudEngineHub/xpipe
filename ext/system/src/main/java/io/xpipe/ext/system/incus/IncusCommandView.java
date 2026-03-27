@@ -113,12 +113,18 @@ public class IncusCommandView extends CommandViewBase {
                 .execute();
     }
 
-    public CommandControl console(String containerName) {
-        return build(commandBuilder -> commandBuilder.add("console").addQuoted(containerName));
+    public CommandControl console(String projectName, String containerName) {
+        return build(commandBuilder -> commandBuilder
+                .add("--project")
+                .addQuoted(projectName)
+                .add("console").addQuoted(containerName));
     }
 
-    public CommandControl configEdit(String containerName) {
-        return build(commandBuilder -> commandBuilder.add("config", "edit").addQuoted(containerName));
+    public CommandControl configEdit(String projectName, String containerName) {
+        return build(commandBuilder -> commandBuilder
+                .add("--project")
+                .addQuoted(projectName)
+                .add("config", "edit").addQuoted(containerName));
     }
 
     public List<DataStoreEntryRef<IncusContainerStore>> listContainers(DataStoreEntryRef<IncusInstallStore> store)

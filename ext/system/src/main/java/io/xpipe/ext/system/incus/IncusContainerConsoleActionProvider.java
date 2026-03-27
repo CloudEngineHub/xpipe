@@ -57,7 +57,7 @@ public class IncusContainerConsoleActionProvider implements HubLeafProvider<Incu
             TerminalLaunch.builder()
                     .entry(ref.get())
                     .title("Console")
-                    .command(view.console(d.getName()))
+                    .command(view.console(d.getProjectName(), d.getName()))
                     .launch();
         }
     }

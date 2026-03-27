@@ -30,7 +30,6 @@ open module io.xpipe.ext.system {
             IncusContainerActionProviderMenu,
             IncusContainerConsoleActionProvider,
             IncusContainerEditConfigActionProvider,
-            IncusContainerEditRunConfigActionProvider,
             LxdContainerConsoleActionProvider,
             LxdContainerEditConfigActionProvider,
             LxdContainerEditRunConfigActionProvider,

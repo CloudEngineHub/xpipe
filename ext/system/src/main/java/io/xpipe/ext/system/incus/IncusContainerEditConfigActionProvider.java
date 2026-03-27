@@ -57,7 +57,7 @@ public class IncusContainerEditConfigActionProvider implements HubLeafProvider<I
             TerminalLaunch.builder()
                     .entry(ref.get())
                     .title("Config")
-                    .command(view.configEdit(d.getName()))
+                    .command(view.configEdit(d.getProjectName(), d.getName()))
                     .launch();
         }
 

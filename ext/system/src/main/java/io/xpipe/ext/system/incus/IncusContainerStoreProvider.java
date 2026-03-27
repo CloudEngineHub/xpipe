@@ -4,6 +4,7 @@ import io.xpipe.app.comp.BaseRegionBuilder;
 import io.xpipe.app.ext.ContainerStoreState;
 import io.xpipe.app.ext.DataStore;
 import io.xpipe.app.ext.GuiDialog;
+import io.xpipe.app.ext.NetworkContainerStoreState;
 import io.xpipe.app.hub.comp.*;
 import io.xpipe.app.platform.BindingsHelper;
 import io.xpipe.app.platform.OptionsBuilder;
@@ -36,11 +37,11 @@ public class IncusContainerStoreProvider implements ShellStoreProvider {
 
     @Override
     public ObservableValue<String> informationString(StoreSection section) {
-        var c = (ContainerStoreState) section.getWrapper().getPersistentState().getValue();
+        var c = (NetworkContainerStoreState) section.getWrapper().getPersistentState().getValue();
         var missing = c.getShellMissing() != null && c.getShellMissing() ? "No shell available" : null;
         return StoreStateFormat.shellStore(
                 section,
-                (ContainerStoreState s) -> new String[] {missing, DataStoreFormatter.capitalize(s.getContainerState())},
+                (ContainerStoreState s) -> new String[] {missing, DataStoreFormatter.capitalize(s.getContainerState()), c.getIpv4()},
                 null);
     }
 
