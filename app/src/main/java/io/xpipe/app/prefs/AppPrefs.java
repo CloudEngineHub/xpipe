@@ -105,6 +105,12 @@ public final class AppPrefs {
             .valueClass(Boolean.class)
             .requiresRestart(true)
             .build());
+    final BooleanProperty hideVaultEntryNames = map(Mapping.builder()
+            .property(new GlobalBooleanProperty(false))
+            .key("hideVaultEntryNames")
+            .valueClass(Boolean.class)
+            .requiresRestart(false)
+            .build());
     final BooleanProperty enableHttpApi = map(Mapping.builder()
             .property(new GlobalBooleanProperty(false))
             .key("enableHttpApi")
@@ -455,6 +461,10 @@ public final class AppPrefs {
 
     public ObservableValue<Boolean> disableHttpsTlsCheck() {
         return disableHttpsTlsCheck;
+    }
+
+    public ObservableBooleanValue hideVaultEntryNames() {
+        return hideVaultEntryNames;
     }
 
     public ObservableValue<VaultAuthentication> vaultAuthentication() {

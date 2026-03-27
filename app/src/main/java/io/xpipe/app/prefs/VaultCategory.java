@@ -109,7 +109,13 @@ public class VaultCategory extends AppPrefsCategory {
                         .licenseRequirement("team")
                         .disable(!LicenseProvider.get().getFeature("team").isSupported())
                         .hide(uh.getUserCount() > 1));
-        builder.sub(new OptionsBuilder().pref(prefs.encryptAllVaultData).addToggle(encryptVault));
+        builder.sub(new OptionsBuilder()
+                .pref(prefs.encryptAllVaultData)
+                .addToggle(encryptVault)
+                .pref(prefs.hideVaultEntryNames)
+                .addToggle(prefs.hideVaultEntryNames)
+                .hide(encryptVault.not())
+        );
         return builder.buildComp();
     }
 }

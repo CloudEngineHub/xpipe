@@ -4,12 +4,6 @@ This repository contains all connection information that is designated to be sha
 
 You can sync with this repository in all XPipe application instances the same way, every change you make in one instance will be reflected in the repository. 
 
-## Category list
-
-%s
-
-## Connection list
-
 %s
 
 ## Secret encryption
