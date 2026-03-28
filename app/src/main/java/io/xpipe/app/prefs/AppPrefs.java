@@ -107,6 +107,7 @@ public final class AppPrefs {
             .build());
     final BooleanProperty hideVaultEntryNames = map(Mapping.builder()
             .property(new GlobalBooleanProperty(false))
+            .vaultSpecific(true)
             .key("hideVaultEntryNames")
             .valueClass(Boolean.class)
             .requiresRestart(false)
