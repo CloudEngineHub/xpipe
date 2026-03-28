@@ -186,6 +186,10 @@ public class StoreViewState {
     }
 
     public void refreshActiveCategory() {
+        if (!initialized) {
+            return;
+        }
+
         if (getActiveCategory().getValue().isHierarchyExpanded()) {
             return;
         }
