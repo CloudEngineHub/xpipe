@@ -46,7 +46,7 @@ public class LxdContainerActionProviderMenu implements HubBranchProvider<LxdCont
                 new StoreRestartActionProvider(),
                 new CopyIpActionProvider(),
                 new LxdContainerConsoleActionProvider(),
-                new LxdContainerEditConfigActionProvider(),
-                new LxdContainerEditRunConfigActionProvider());
+                new LxdContainerEditConfigActionProvider()
+        );
     }
 }

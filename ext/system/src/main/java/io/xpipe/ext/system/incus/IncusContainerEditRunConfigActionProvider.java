@@ -1,4 +1,4 @@
-package io.xpipe.ext.system.lxd;
+package io.xpipe.ext.system.incus;
 
 import io.xpipe.app.action.AbstractAction;
 import io.xpipe.app.browser.BrowserFullSessionModel;
@@ -16,10 +16,10 @@ import javafx.beans.value.ObservableValue;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 
-public class LxdContainerEditRunConfigActionProvider implements HubLeafProvider<LxdContainerStore> {
+public class IncusContainerEditRunConfigActionProvider implements HubLeafProvider<IncusContainerStore> {
 
     @Override
-    public AbstractAction createAction(DataStoreEntryRef<LxdContainerStore> ref) {
+    public AbstractAction createAction(DataStoreEntryRef<IncusContainerStore> ref) {
         return Action.builder().ref(ref).build();
     }
 
@@ -29,35 +29,35 @@ public class LxdContainerEditRunConfigActionProvider implements HubLeafProvider<
     }
 
     @Override
-    public ObservableValue<String> getName(DataStoreEntryRef<LxdContainerStore> store) {
+    public ObservableValue<String> getName(DataStoreEntryRef<IncusContainerStore> store) {
         return AppI18n.observable("editRunConfiguration");
     }
 
     @Override
-    public LabelGraphic getIcon(DataStoreEntryRef<LxdContainerStore> store) {
+    public LabelGraphic getIcon(DataStoreEntryRef<IncusContainerStore> store) {
         return new LabelGraphic.IconGraphic("mdi2m-movie-edit");
     }
 
     @Override
-    public Class<LxdContainerStore> getApplicableClass() {
-        return LxdContainerStore.class;
+    public Class<IncusContainerStore> getApplicableClass() {
+        return IncusContainerStore.class;
     }
 
     @Override
     public String getId() {
-        return "editLxdContainerRunConfig";
+        return "editIncusContainerRunConfig";
     }
 
     @Jacksonized
     @SuperBuilder
-    public static class Action extends StoreAction<LxdContainerStore> {
+    public static class Action extends StoreAction<IncusContainerStore> {
 
         @Override
         public void executeImpl() throws Exception {
             var d = ref.getStore();
             var elevatedRef = ProcessControlProvider.get()
-                    .elevated(d.getCmd().getStore().getHost().get().ref());
-            var file = FilePath.of("/run/lxd/" + d.getContainerName() + "/lxc.conf");
+                    .elevated(d.getInstall().getStore().getHost().get().ref());
+            var file = FilePath.of("/run/incus/" + d.getContainerName() + "/lxc.conf");
             var model = BrowserFullSessionModel.DEFAULT.openFileSystemSync(
                     elevatedRef, null, m -> file.getParent(), null, true);
             var found = model.findFile(file);
