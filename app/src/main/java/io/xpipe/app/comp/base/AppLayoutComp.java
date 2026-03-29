@@ -4,6 +4,7 @@ import io.xpipe.app.comp.BaseRegionBuilder;
 import io.xpipe.app.comp.RegionStructure;
 import io.xpipe.app.comp.RegionStructureBuilder;
 import io.xpipe.app.core.AppLayoutModel;
+import io.xpipe.app.issue.TrackEvent;
 import io.xpipe.app.platform.PlatformThread;
 import io.xpipe.app.terminal.TerminalDockHubManager;
 
@@ -42,15 +43,20 @@ public class AppLayoutComp extends RegionStructureBuilder<BorderPane, AppLayoutC
                                 model.getSelected()),
                         (v1, v2) -> v2,
                         LinkedHashMap::new));
-        var multi = new MultiContentComp(true, map);
-        multi.style("background");
 
         var pane = new BorderPane();
-        var sidebar = new SideMenuBarComp(model.getSelected(), model.getEntries(), model.getQueueEntries());
+
+        var multi = new MultiContentComp(true, map);
+        multi.style("background");
         StackPane multiR = (StackPane) multi.build();
         pane.setCenter(multiR);
+        TrackEvent.info("Window content comp created");
+
+        var sidebar = new SideMenuBarComp(model.getSelected(), model.getEntries(), model.getQueueEntries());
         var sidebarR = sidebar.build();
+        TrackEvent.info("Window sidebar comp created");
         pane.setRight(sidebarR);
+
         pane.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             sidebarR.getChildrenUnmodifiable().forEach(node -> {
                 var shortcut = (KeyCodeCombination) node.getProperties().get("shortcut");
