@@ -48,6 +48,10 @@ public class TransferFilesActionProvider implements ActionProvider {
                 return true;
             }
 
+            if (operation.getFiles().isEmpty()) {
+                return true;
+            }
+
             var sourceFs = operation.getFiles().getFirst().getFileSystem();
             var sourceAccess = sourceFs.getShell().map(ShellControl::getLocalSystemAccess).orElse(null);
             var sourceSlowRemote = sourceAccess != null && ParentSystemAccess.isEquivalent(sourceAccess, ParentSystemAccess.none());
