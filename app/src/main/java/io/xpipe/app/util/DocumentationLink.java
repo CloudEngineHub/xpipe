@@ -101,6 +101,7 @@ public enum DocumentationLink {
     SHELL_ENVIRONMENTS_USER("guide/environments#users"),
     SHELL_ENVIRONMENTS_SCRIPTS("guide/environments#scripts"),
     SERIAL("guide/serial"),
+    WORKSPACES("guide/workspaces"),
     ICONS("guide/hub#icons"),
     ONE_PASSWORD_KEYS("guide/password-manager#key-format"),
     GNOME_WAYLAND_SCALING("troubleshoot/wayland-blur"),

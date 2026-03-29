@@ -52,7 +52,7 @@ public class WorkspaceManager {
         var d = AppProperties.get().getDataDir();
         var existing = workspaces.stream().filter(workspace -> workspace.getDir().equals(d)).findFirst();
         if (existing.isEmpty()) {
-            var name = d.getFileName().toString().startsWith(".xpipe") ? "Default" : d.getFileName().toString();
+            var name = d.getFileName().toString().equals(".xpipe") ? "Default" : d.getFileName().toString().equals(".xpipe-ptb") ? "PTB": d.getFileName().toString();
             current = new WorkspaceEntry(name, d);
             workspaces.addFirst(current);
         } else {

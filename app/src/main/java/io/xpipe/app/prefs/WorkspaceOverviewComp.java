@@ -6,6 +6,7 @@ import io.xpipe.app.comp.base.ListBoxViewComp;
 import io.xpipe.app.comp.base.TileButtonComp;
 import io.xpipe.app.comp.base.VerticalComp;
 import io.xpipe.app.core.AppI18n;
+import io.xpipe.app.util.LicenseProvider;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.scene.layout.Region;
@@ -38,6 +39,7 @@ public class WorkspaceOverviewComp extends SimpleRegionBuilder {
                 });
         addButton.setIconSize(1.0);
         addButton.maxWidth(2000);
+        addButton.disable(!LicenseProvider.get().getFeature("workspaces").isSupported());
         var vbox = new VerticalComp(List.of(box, RegionBuilder.hseparator(), addButton));
         vbox.spacing(10);
         return vbox.build();

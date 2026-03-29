@@ -5,6 +5,7 @@ import io.xpipe.app.comp.base.ButtonComp;
 import io.xpipe.app.core.AppI18n;
 import io.xpipe.app.platform.LabelGraphic;
 import io.xpipe.app.platform.OptionsBuilder;
+import io.xpipe.app.util.DocumentationLink;
 import io.xpipe.app.util.LicenseProvider;
 
 public class WorkspacesCategory extends AppPrefsCategory {
@@ -25,9 +26,9 @@ public class WorkspacesCategory extends AppPrefsCategory {
                 .title("manageWorkspaces")
                 .sub(new OptionsBuilder()
                         .nameAndDescription("workspaceManagement")
+                        .documentationLink(DocumentationLink.WORKSPACES)
                         .licenseRequirement("workspaces")
                         .addComp(new WorkspaceOverviewComp().maxWidth(getCompWidth())))
-                .disable(!LicenseProvider.get().getFeature("workspaces").isSupported())
                 .buildComp();
     }
 }
