@@ -269,7 +269,7 @@ public class StoreViewState {
     }
 
     private void onFilterUpdate(StoreFilter newValue) {
-        var all = getAllConnectionsCategory();
+        var all = getActiveCategory().getValue().getRoot();
         categories.getList().forEach(e -> {
             e.update();
         });
