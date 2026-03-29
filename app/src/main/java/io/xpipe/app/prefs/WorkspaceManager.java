@@ -33,7 +33,7 @@ public class WorkspaceManager {
     private WorkspaceEntry current;
 
     private void load() {
-        var file = AppProperties.get().getDefaultDataDir().resolve("workspaces.json");
+        var file = AppProperties.get().getDefaultReleaseDataDir().resolve("workspaces.json");
         if (Files.exists(file)) {
             try {
                 var type = TypeFactory.defaultInstance().constructType(new TypeReference<List<WorkspaceEntry>>() {});
@@ -61,8 +61,12 @@ public class WorkspaceManager {
     }
 
     private void save() {
+        if (AppProperties.get().isAotTrainMode() ||AppProperties.get().isTest() || workspaces.isEmpty() || !Files.exists(AppProperties.get().getDefaultReleaseDataDir())) {
+            return;
+        }
+
         try {
-            var file = AppProperties.get().getDefaultDataDir().resolve("workspaces.json");
+            var file = AppProperties.get().getDefaultReleaseDataDir().resolve("workspaces.json");
             JacksonMapper.getDefault().writeValue(file.toFile(), workspaces);
         } catch (Exception e) {
             ErrorEventFactory.fromThrowable(e).expected().handle();
