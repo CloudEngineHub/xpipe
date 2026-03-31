@@ -72,7 +72,7 @@ public class SecretPasswordManagerStrategy implements SecretRetrievalStrategy {
             @Override
             public SecretQueryResult query(String prompt, boolean forceFocus) {
                 var pm = AppPrefs.get().passwordManager().getValue();
-                if (pm == null) {
+                if (key == null || pm == null) {
                     ErrorEventFactory.fromMessage(
                                     "A password manager was requested but no password manager has been set in the settings menu")
                             .expected()
