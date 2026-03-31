@@ -17,7 +17,7 @@ public class AppDisplayScale {
                 screenOutputScale = primary.getOutputScaleX();
             }
 
-            var s = AppPrefs.get().uiScale().getValue();
+            var s = AppPrefs.get() != null ? AppPrefs.get().uiScale().getValue() : null;
             if (s != null && s == 100) {
                 defaultDisplayScale = true;
             }
