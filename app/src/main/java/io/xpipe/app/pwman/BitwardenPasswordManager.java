@@ -259,6 +259,17 @@ public class BitwardenPasswordManager implements PasswordManager {
     }
 
     private static void sync() throws Exception {
+        if (Dist.get().checkInPath()) {
+            try {
+                CommandSupport.isInLocalPathOrThrow("Bitwarden CLI", "bw");
+            } catch (Exception e) {
+                ErrorEventFactory.fromThrowable(e)
+                        .link("https://bitwarden.com/help/cli/#download-and-install")
+                        .handle();
+                return;
+            }
+        }
+
         // Copy existing file if possible to retain configuration
         copyConfigIfNeeded();
 
