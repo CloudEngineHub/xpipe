@@ -79,6 +79,8 @@ public enum DocumentationLink {
     SSH_X11("guide/ssh#x11-forwarding"),
     SSH_LIMITED("guide/ssh#limited--embedded-systems"),
     PSSESSION("guide/pssession"),
+    CONNECTION_SEARCH("guide/connection-search#adding-connections"),
+    NETWORK_SCAN("guide/connection-search#network-scan"),
     RDP_ADDITIONAL_OPTIONS("guide/rdp#additional-rdp-options"),
     RDP_ALLOW_LIST("guide/desktop-applications#allow-lists"),
     RDP_TUNNEL_HOST("guide/rdp#rdp-tunnels"),

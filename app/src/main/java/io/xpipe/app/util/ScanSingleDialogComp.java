@@ -63,6 +63,7 @@ class ScanSingleDialogComp extends ModalOverlayContentComp {
         var b = new OptionsBuilder()
                 .name("scanAlertChoiceHeader")
                 .description("scanAlertChoiceHeaderDescription")
+                .documentationLink(DocumentationLink.CONNECTION_SEARCH)
                 .addComp(new StoreChoiceComp<>(
                                 null,
                                 entry,
