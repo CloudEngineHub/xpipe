@@ -22,6 +22,133 @@ public class IncusCommandView extends CommandViewBase {
         super(shellControl);
     }
 
+    public Project project(String project) {
+        return new Project(project);
+    }
+
+    public class Project extends CommandView {
+
+        private final String project;
+
+        public Project(String project) {
+            this.project = project;
+        }
+
+        @Override
+        protected CommandControl build(Consumer<CommandBuilder> builder) {
+            var cmd = CommandBuilder.of().add("incus").add("--project", project != null ? project : "default");
+            builder.accept(cmd);
+            return shellControl
+                    .command(cmd)
+                    .withErrorFormatter(IncusCommandView::formatErrorMessage)
+                    .withExceptionConverter(IncusCommandView::convertException)
+                    .elevated(requiresElevation());
+        }
+
+        @Override
+        protected ShellControl getShellControl() {
+            return IncusCommandView.this.getShellControl();
+        }
+
+        @Override
+        public Project start() throws Exception {
+            shellControl.start();
+            return this;
+        }
+
+
+        public void start(String containerName) throws Exception {
+            build(commandBuilder -> commandBuilder
+                    .add("start")
+                    .addQuoted(containerName))
+                    .execute();
+        }
+
+        public void stop(String containerName) throws Exception {
+            build(commandBuilder -> commandBuilder
+                    .add("stop")
+                    .addQuoted(containerName))
+                    .execute();
+        }
+
+        public void pause(String containerName) throws Exception {
+            build(commandBuilder -> commandBuilder
+                    .add("pause")
+                    .addQuoted(containerName))
+                    .execute();
+        }
+
+        public CommandControl console(String containerName) {
+            return build(commandBuilder -> commandBuilder
+                    .add("console").addQuoted(containerName));
+        }
+
+        public CommandControl configEdit(String containerName) {
+            return build(commandBuilder -> commandBuilder
+                    .add("config", "edit").addQuoted(containerName));
+        }
+
+
+
+        public Optional<ContainerEntry> queryContainerState(String containerName) throws Exception {
+            var l = listContainers();
+            var found = l.stream()
+                    .filter(containerEntry -> (containerEntry.getProject().equals(project)
+                            || project == null
+                            && containerEntry.getProject().equals("default"))
+                            && containerEntry.getName().equals(containerName))
+                    .findFirst();
+            return found;
+        }
+
+
+        public ShellControl exec(String container, String user, Supplier<Boolean> busybox) {
+            var sub = shellControl.subShell();
+            sub.setDumbOpen(createOpenFunction(container, user, false, busybox));
+            sub.setTerminalOpen(createOpenFunction(container, user, true, busybox));
+            return sub.withExceptionConverter(IncusCommandView::convertException).elevated(requiresElevation());
+        }
+
+        private ShellOpenFunction createOpenFunction(String containerName, String user, boolean terminal, Supplier<Boolean> busybox) {
+            return new ShellOpenFunction() {
+                @Override
+                public CommandBuilder prepareWithoutInitCommand() {
+                    var b = execCommand(containerName, terminal).add("su", "-l");
+                    if (user != null) {
+                        b.addQuoted(user);
+                    }
+                    return b;
+                }
+
+                @Override
+                public CommandBuilder prepareWithInitCommand(@NonNull String command) {
+                    var b = execCommand(containerName, terminal).add("su", "-l");
+                    if (user != null) {
+                        b.addQuoted(user);
+                    }
+                    return b.add(sc -> {
+                                var suType = busybox.get();
+                                if (suType) {
+                                    return "-c";
+                                } else {
+                                    return "--session-command";
+                                }
+                            })
+                            .addLiteral(command);
+                }
+            };
+        }
+
+        private CommandBuilder execCommand(String containerName, boolean terminal) {
+            var c = CommandBuilder.of()
+                    .add("incus")
+                    .add("--project", project != null ? project : "default")
+                    .add("exec", terminal ? "-t" : "-T");
+            return c.addQuoted(containerName)
+                    .add("--");
+        }
+    }
+
     private static ElevationFunction requiresElevation() {
         return ElevationFunction.cached("incusRequiresElevation", new ElevationFunction() {
             @Override
@@ -86,47 +213,6 @@ public class IncusCommandView extends CommandViewBase {
         return build(commandBuilder -> commandBuilder.add("version")).readStdoutOrThrow();
     }
 
-    public void start(String projectName, String containerName) throws Exception {
-        build(commandBuilder -> commandBuilder
-                        .add("start")
-                        .addQuoted(containerName)
-                        .add("--project")
-                        .addQuoted(projectName))
-                .execute();
-    }
-
-    public void stop(String projectName, String containerName) throws Exception {
-        build(commandBuilder -> commandBuilder
-                        .add("stop")
-                        .addQuoted(containerName)
-                        .add("--project")
-                        .addQuoted(projectName))
-                .execute();
-    }
-
-    public void pause(String projectName, String containerName) throws Exception {
-        build(commandBuilder -> commandBuilder
-                        .add("pause")
-                        .addQuoted(containerName)
-                        .add("--project")
-                        .addQuoted(projectName))
-                .execute();
-    }
-
-    public CommandControl console(String projectName, String containerName) {
-        return build(commandBuilder -> commandBuilder
-                .add("--project")
-                .addQuoted(projectName)
-                .add("console").addQuoted(containerName));
-    }
-
-    public CommandControl configEdit(String projectName, String containerName) {
-        return build(commandBuilder -> commandBuilder
-                .add("--project")
-                .addQuoted(projectName)
-                .add("config", "edit").addQuoted(containerName));
-    }
-
     public List<DataStoreEntryRef<IncusContainerStore>> listContainers(DataStoreEntryRef<IncusInstallStore> store)
             throws Exception {
         return listContainers().stream()
@@ -147,17 +233,6 @@ public class IncusCommandView extends CommandViewBase {
                 .toList();
     }
 
-    public Optional<ContainerEntry> queryContainerState(String projectName, String containerName) throws Exception {
-        var l = listContainers();
-        var found = l.stream()
-                .filter(containerEntry -> (containerEntry.getProject().equals(projectName)
-                                || projectName == null
-                                        && containerEntry.getProject().equals("default"))
-                        && containerEntry.getName().equals(containerName))
-                .findFirst();
-        return found;
-    }
-
     @Value
     public static class ContainerEntry {
         String project;
@@ -168,8 +243,7 @@ public class IncusCommandView extends CommandViewBase {
     }
 
     private List<ContainerEntry> listContainers() throws Exception {
-        try (var c = build(commandBuilder -> commandBuilder.add("list", "--all-projects", "-f", "json"))
-                .start()) {
+        try (var c = build(commandBuilder -> commandBuilder.add("list", "--all-projects", "-f", "json")).start()) {
             var output = c.readStdoutOrThrow();
             var json = JacksonMapper.getDefault().readTree(output);
             var l = new ArrayList<ContainerEntry>();
@@ -213,51 +287,5 @@ public class IncusCommandView extends CommandViewBase {
             }
             return l;
         }
-    }
-
-    public ShellControl exec(String projectName, String container, String user, Supplier<Boolean> busybox) {
-        var sub = shellControl.subShell();
-        sub.setDumbOpen(createOpenFunction(projectName, container, user, false, busybox));
-        sub.setTerminalOpen(createOpenFunction(projectName, container, user, true, busybox));
-        return sub.withExceptionConverter(IncusCommandView::convertException).elevated(requiresElevation());
-    }
-
-    private ShellOpenFunction createOpenFunction(
-            String projectName, String containerName, String user, boolean terminal, Supplier<Boolean> busybox) {
-        return new ShellOpenFunction() {
-            @Override
-            public CommandBuilder prepareWithoutInitCommand() {
-                var b = execCommand(projectName, containerName, terminal).add("su", "-l");
-                if (user != null) {
-                    b.addQuoted(user);
-                }
-                return b;
-            }
-
-            @Override
-            public CommandBuilder prepareWithInitCommand(@NonNull String command) {
-                var b = execCommand(projectName, containerName, terminal).add("su", "-l");
-                if (user != null) {
-                    b.addQuoted(user);
-                }
-                return b.add(sc -> {
-                            var suType = busybox.get();
-                            if (suType) {
-                                return "-c";
-                            } else {
-                                return "--session-command";
-                            }
-                        })
-                        .addLiteral(command);
-            }
-        };
-    }
-
-    public CommandBuilder execCommand(String projectName, String containerName, boolean terminal) {
-        var c = CommandBuilder.of().add("incus", "exec", terminal ? "-t" : "-T");
-        return c.addQuoted(containerName)
-                .add("--project")
-                .addQuoted(projectName)
-                .add("--");
     }
 }

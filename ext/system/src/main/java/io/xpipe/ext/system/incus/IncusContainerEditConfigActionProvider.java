@@ -52,12 +52,11 @@ public class IncusContainerEditConfigActionProvider implements HubLeafProvider<I
         @Override
         public void executeImpl() throws Exception {
             var d = ref.getStore();
-            var view = new IncusCommandView(
-                    d.getInstall().getStore().getHost().getStore().getOrStartSession());
+            var view = d.view();
             TerminalLaunch.builder()
                     .entry(ref.get())
                     .title("Config")
-                    .command(view.configEdit(d.getProjectName(), d.getName()))
+                    .command(view.configEdit(d.getName()))
                     .launch();
         }
 

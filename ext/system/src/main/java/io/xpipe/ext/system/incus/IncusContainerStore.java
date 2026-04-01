@@ -44,6 +44,14 @@ public class IncusContainerStore
     String containerName;
     IdentityValue identity;
 
+    public IncusCommandView.Project view() throws Exception {
+        return view(getInstall().getStore().getHost().getStore().getOrStartSession());
+    }
+
+    public IncusCommandView.Project view(ShellControl sc) {
+        return new IncusCommandView(sc).project(projectName);
+    }
+
     @Override
     public List<DataStoreEntryRef<?>> getDependencies() {
         return DataStoreDependencies.of(install, identity != null ? identity.getDependencies() : null);
@@ -93,7 +101,7 @@ public class IncusContainerStore
                         getInstall().getStore().getHost().getStore().getOrStartSession());
 
                 var user = identity != null ? identity.unwrap().getUsername().retrieveUsername() : null;
-                var sc = new IncusCommandView(parent).exec(projectName, containerName, user, () -> {
+                var sc = view(parent).exec(containerName, user, () -> {
                     var state = getState();
                     var alpine = state.getOsName() != null
                             && state.getOsName().toLowerCase().contains("alpine");
@@ -130,8 +138,8 @@ public class IncusContainerStore
 
     private void refreshContainerState(ShellControl sc) throws Exception {
         var state = getState();
-        var view = new IncusCommandView(sc);
-        var displayState = view.queryContainerState(projectName, containerName);
+        var view = view(sc);
+        var displayState = view.queryContainerState(containerName);
         if (displayState.isEmpty()) {
             return;
         }
@@ -149,8 +157,8 @@ public class IncusContainerStore
     @Override
     public void start() throws Exception {
         var sc = getInstall().getStore().getHost().getStore().getOrStartSession();
-        var view = new IncusCommandView(sc);
-        view.start(projectName, containerName);
+        var view = view();
+        view.start(containerName);
         refreshContainerState(sc);
     }
 
@@ -158,16 +166,16 @@ public class IncusContainerStore
     public void stop() throws Exception {
         stopSessionIfNeeded();
         var sc = getInstall().getStore().getHost().getStore().getOrStartSession();
-        var view = new IncusCommandView(sc);
-        view.stop(projectName, containerName);
+        var view = view();
+        view.stop(containerName);
         refreshContainerState(sc);
     }
 
     @Override
     public void pause() throws Exception {
         var sc = getInstall().getStore().getHost().getStore().getOrStartSession();
-        var view = new IncusCommandView(sc);
-        view.pause(projectName, containerName);
+        var view = view();
+        view.pause(containerName);
         refreshContainerState(sc);
     }
 
