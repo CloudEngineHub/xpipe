@@ -407,11 +407,12 @@ public class ConnectionFileSystem implements FileSystem {
         } else {
             var list = new ArrayList<>(List.of(
                     home,
+                    home.join(".config"),
                     home.join("Downloads"),
                     home.join("Documents"),
                     FilePath.of("/etc"),
-                    shellControl.getSystemTemporaryDirectory(),
-                    FilePath.of("/var")));
+                    FilePath.of("/var"),
+                    shellControl.getSystemTemporaryDirectory()));
             var parentHome = home.getParent();
             if (parentHome != null && !parentHome.toString().equals("/")) {
                 list.add(3, parentHome);
