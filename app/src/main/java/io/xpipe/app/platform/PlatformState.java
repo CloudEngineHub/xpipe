@@ -115,15 +115,16 @@ public enum PlatformState {
 
         // This issue is now fixed in 27-ea+4
         // The bellsoft JavaFX build for ARM does not contain the fix yet
-        if (OsType.ofLocal() == OsType.WINDOWS && AppProperties.get().getArch().equals("x86_64")) {
+        if (OsType.ofLocal() == OsType.WINDOWS && !AppProperties.get().getArch().equals("x86_64")) {
             // This is primarily intended to fix Windows unified stage transparency issues
             // (https://bugs.openjdk.org/browse/JDK-8329382)
             // But apparently it can also occur without a custom stage on Windows
             System.setProperty("prism.forceUploadingPainter", "true");
         }
 
-        if (AppPrefs.get() != null
-                && AppPrefs.get().disableHardwareAcceleration().get()) {
+        // Assume that someone who has set this env variable wants to use the software renderer
+        var overrideDisableHardwareAcceleration = OsType.ofLocal() == OsType.LINUX && "1".equals(System.getenv("LIBGL_ALWAYS_SOFTWARE"));
+        if (overrideDisableHardwareAcceleration || (AppPrefs.get() != null && AppPrefs.get().disableHardwareAcceleration().get())) {
             System.setProperty("prism.order", "sw");
         }
 
