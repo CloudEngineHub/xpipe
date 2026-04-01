@@ -29,6 +29,10 @@ public class ShellView {
         this.shellControl = shellControl;
     }
 
+    public void checkSupported() {
+        shellControl.getShellDialect().getDumbMode().throwIfUnsupported();
+    }
+
     protected ShellDialect getDialect() {
         return shellControl.getShellDialect();
     }
