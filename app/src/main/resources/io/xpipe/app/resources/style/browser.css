@@ -221,6 +221,10 @@
     -fx-border-width: 0;
 }
 
+.browser .overview .simple-titled-pane-comp > .content {
+    -fx-padding: 0 2 4 4;
+}
+
 .browser .overview-file-list .button {
     -fx-border-width: 0;
     -fx-background-radius: 0;

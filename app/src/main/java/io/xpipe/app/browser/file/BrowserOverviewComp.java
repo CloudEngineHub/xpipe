@@ -64,9 +64,10 @@ public class BrowserOverviewComp extends SimpleRegionBuilder {
                 ErrorEventFactory.fromThrowable(e).expected().omit().handle();
             }
         });
-        var commonOverview = new BrowserFileOverviewComp(model, commonPlatform, false);
+        var commonOverview = new BrowserFileOverviewComp(model, commonPlatform, true);
+        commonOverview.minHeight(160);
         var commonPane = new SimpleTitledPaneComp(AppI18n.observable("common"), commonOverview, false)
-                .apply(struc -> VBox.setVgrow(struc, Priority.NEVER));
+                .apply(struc -> VBox.setVgrow(struc, Priority.ALWAYS));
         commonPane.hide(Bindings.isEmpty(commonPlatform));
         list.add(commonPane);
 
